@@ -1,0 +1,323 @@
+---
+title: "Code snippets for ggbiplot.vegan"
+author: "Hans Van Calster & Pieter Verschelde"
+date: "24 november 2016"
+output: html_document
+---
+
+# Data
+
+In deze korte handleiding gebruiken we de "dune" dataset die bij het vegan pakket is meegeleverd als voorbeelddataset om mogelijkheden van de ggbiplot_vegan en ggscreeplot te illustreren. De bron van deze dataset (de Dune Meadow Data) komt uit  Batterink & Wijffels (1983). Het doel van deze dataset was om een verband te vinden tussen management in dune meadows en de gedetecteerde soorten. Hiervoor werden op 20 sites (uit de originele 80 van de studie) de aanwezigheid van 30 soorten gecategoriseerd volgens een ordinale schaal, gebaseerd op de Braun-Blanquet schaal die gaat van 0 tot en met 9
+
+Verder bestaat deze dataset ook nog uit een deel "dune.env" die 5 omgevingsvariabelen bevat (A1, Moisture, Management, Use, Manure)
+
+In dit voorbeeld maken we gewoon een rda analyse met inclusie van omgevingsvariabelen. Dezelfde figuren kunnen gemaakt worden voor een cca, capscale en prda (rda met een Condition variabele)
+
+```{r data}
+library(vegan)
+library(ggplot2)
+library(INBOmisc)
+data(dune)
+data(dune.env)
+data(dune.taxon)
+set.seed(222)
+dune.desc <-
+  data.frame(F1 = factor(sample(letters[1:5], size=nrow(dune.env), replace = TRUE)),
+             F2 = factor(sample(LETTERS[6:10], size=nrow(dune.env), replace = TRUE)))
+str(dune)
+str(dune.env)
+str(dune.taxon)
+str(dune.desc)
+
+#Fictieve dataset met beschrijvende data voor de sites
+
+
+
+```
+
+# rda analyse
+
+```{r rda}
+# rda analyse: vegan::rda() 
+############################
+dune.rda <- rda(dune ~ A1 + Management, data = dune.env) 
+dune.rda 
+# constrained rank = 4 = 1 + (4-1)
+# unconstrained rank = 15 (er zijn in feite 20
+# eigenwaarden, maar de laatste vijf eigenwaarden zijn 0)
+eigenvals(dune.rda) 
+head(summary(dune.rda),5)
+
+```
+
+##screeplot
+
+Via de functie ggscreeplot kan een screeplot gemaakt worden van het object. Deze functie is bruikbaar voor objecten gemaakt via \code{prcomp} of \code{princomp} maar is ook van toepassing voor objecten met eigenvalues die via het vegan pakket gemaakt zijn zoals bijvoorbeeld bij een rda analyse.
+Deze kan op 3 manieren worden voorgesteld:
+
+- pev: de relatieve bijdrage van de specifieke as op het totaal
+- cev: de cumulatieve bijdrage na gebruik te maken van alle assen tot deze as
+- both: de specifieke en cumulatieve bijdrage op 1 grafiek.
+
+In onderstaande grafiek ziet het screeplot er vreemd uit, want bij een gewone PCA verwacht je een mooie curve waarbij iedere as minder en minder bijdraagt tot het totaal. 
+Wanneer echter verklarende variabelen worden toegevoegd in het model zullen de eerste assen tonen hoeveel van de totale variabiliteit verklaard is door deze variabelen, en daarna komen slechts de assen van de principale componenten tot uiting.
+
+Hier worden eerst de "constraints" getoond. Deze gebruikt 4 vrijheidsgraden (1 continue variabele en een factor met 4 levels (= 3 vrijheidsgraden)). Daarna komen de "unconstraint" assen tot uiting. Dit zijn normaal 20 assen, maar de eigenwaarden van de laatste 5 assen zijn 0 omdat de volledige data al verklaard is 19 assen (er zijn immers slechts 20 observaties).
+
+```{r scree}
+p1 <- ggscreeplot(dune.rda, type = "pev")
+p2 <- ggscreeplot(dune.rda, type = "cev")
+p3 <- ggscreeplot(dune.rda, type = "both")
+gridExtra::grid.arrange(p1,p2,p3, ncol = 1)
+
+```
+
+##Generiek biplot
+
+De generieke biplot stelt de sites, de soorten en de omgevingsvariabelen voor in 1 figuur. Dit is ook bruikbaar voor data die niet soortengerelateerd is, hierbij kan je de sites dan zien als observaties en de soorten als verklarende variabelen (pijlen in de biplot).
+
+```{r standaard biplot}
+plot(dune.rda)
+```
+
+
+De biplot die gecreëerd wordt via de functie ggbiplot_vegan doet hetzelfde als de originele biplot, maar gebruikt ggplot2 als motor om de plots te genereren. Hierdoor onstaat er ook veel extra flexibiliteit om de figuren volledig naar je hand te zetten. Hierbij wordt de plot laag per laag getekend. Er kan ook een wrapper functie gebruikt worden om dit in 1 lijn code te kunnen plotten.
+
+In deze wrapper functie, ggbiplot_vegan kies je het vegan-object dat geplot moet worden en kan je dan de geoms definiëren die ggplot gebruikt. In dit geval willen we de site, de soort, de continue omgevingsvariabelen en de factorlevels van factorvariabelen. 
+
+De eenvoudigste vorm van een biplot, gebruikt gewoon de standaardinstellingen en toont de sites al punten en de soorten als gelabelde pijlen.
+
+```{r standaardbiplot}
+ggbiplot_vegan(dune.rda)
+```
+
+Een iets uitgebreidere versie toont de sites als text, waarvoor de rijnamen van de scores van het vegan-object als labels gebruikt worden. De soorten stellen we ook gewoon voor als tekst, dus de species_geom wordt ook op tekst gezet. Via bp_geom (biplot scores voor continiue omgevingsvariabelen) en cn_geom (centroïden voor factoromgevingsvariabelen) kunnen deze toegevoegd worden aan de plot. Dus om exact dezelfde plot te krijgen (op een schalingsfactor na voor de omgevingsvariabelen) kan je onderstaande code gebruiken. Hierbij zeg je dat de sites, soorten en de centroïden van de omgevingsfactorvariabelen als tekst weergegeven worden en de continue omgevingsvariabelen als een pijl.
+
+
+```{r nieuwe biplot}
+ggbiplot_vegan(dune.rda, site_geom = "text", species_geom = "text", bp_geom = "arrow", cn_geom = "text")
+```
+
+
+De uitgebreidere versie van de biplot functionaliteit laat veel meer toe:
+
+- site-labels zelf kiezen aan de hand van beschrijvende data
+- sites kleuren, vervormen, transparant maken, vergroten aan de hand van een groepsvariabele in beschrijvende metadata
+- ellipsen op basis van een andere variabele tonen
+- Net zoals de sites kunnen ook de soorten ingedeeld worden in groepen en een specifieke voorstelling per groep krijgen
+- Toevoeging van een correlatiecirkel om te tonen hoeveel % de soorten verklaren
+- ...
+
+##Opbouw van de biplot
+
+### Extraheren van de data
+
+Een biplot kan laag per laag gebouwd worden. Om dit proces te vergemakkelijken zijn enkele functies voorzien om het vegan-object om te zetten in plotbare dataframes. Hierbij kan de data gelinkt worden aan specifieke metadata.
+
+In eerste instantie moet de data laag per laag uit het object gehaald worden. Dit gebeurt voor de pure objectdata zoals site scores, species scores, lineaire constraints, via de functie get_display_data wat een functie is die bovenop de \code{scores} functie van het vegan pakket gebouwd is.
+
+Het eerste argument van ieder van deze functies is het multivariaat object (dune.rda). Optioneel kan dan een descriptieve dataset toegevoegd worden die dan via het merge_by argument aan het multivariaat object wordt gehangen. Het merge_by object is ofwel "row.numbers" waarbij de beschrijvende dataset gewoon domweg in dezelfde volgorde als de scores van het object worden samengebracht via een "cbind". In alle andere gevallen worden de rijnamen van het multivariaat object gebruikt en deze wordt dan gelinkt aan een zelfgekozen variabele in de beschrijvende dataset, waarbij ook via rijnamen (merge_by = "row.names") wordt toegelaten.
+
+De andere argumenten die telkens terugkomen zijn 
+
+- choices: welke assen wil je plotten. Dit moet altijd een vector van 2 cijfers zijn
+- display: welke scores wil je uit het object halen. Dit zal telkens wijzigen voor iedere plotlaag
+- scaling: Hoe wordt het biplot geschaald. Standaard is dat op basis van de soorteninformatie (scaling = 2 of "species"). Hier zijn ook andere mogelijkheden zoals "sites", "symmetric" en "none". Standaard is dit "species" omdat meestal de sites als punten en de soorten/morfologische kenmerken als pijlen worden voorgesteld en een "species"-scaling garandeert dat de hoek tussen de pijlen de correlatie tussen die 2 variabelen voorstelt.
+
+Verder zijn er nog enkele specifieke variabelen die gedefinieerd kunnen worden zoals dat de soorten afgekort moeten worden, hoever de soorten van de pijlen moeten staan. Remove_row_prefix laat je best op TRUE staan en zorgt dat de niet-gespecificeerde rijnamen in het vegan object niet worden gewijzigd in row 1, row 2, ... maar gewoon 1, 2, ... blijven.
+
+In de huidige versie van de ggbiplot_vegan versie worden enkel functies voorzien voor de volgende display argumenten: sites, species, lc, bp, cn.
+
+
+```{r nieuwe biplot}
+
+site_data <- get_display_data(dune.rda, data = dune.desc, choices = 1:2, display="sites", scaling = 2, merge_by = "row.numbers")
+species_data <- get_display_data(dune.rda, dune.taxon, choices = 1:2, display = "species", scaling = 2, merge_by = "row.names")
+linear_constraints_sites<- get_display_data(dune.rda, choices = 1:2, display = "lc", scaling = "sites", merge_by = "row.numbers")
+environmental_vars <- get_display_data(dune.rda, choices = 1:2, display = "bp", scaling = 2)
+environmental_centroids <- get_display_data(dune.rda, choices = 1:2, display = "cn", scaling = 2)
+
+head(site_data)
+head(species_data)
+head(linear_constraints_sites)
+head(environmental_vars)
+head(environmental_centroids)
+
+attributes(site_data)
+
+
+```
+
+In bovenstaande code zie je dat de informatie uit de objecten geëxtraheerd is in een data.frame formaat en dat er enkele variabelen en attributen zijn toegevoegd die het plotten van de biplot gemakkelijker maken en zorgen dat de effectieve biplot functionaliteit geen interpretaties en berekeningen moet uitvoeren. 
+
+- r staat voor de radius van de correlatiecirkel op basis van de geselecteerde assen
+- axis.labels bevat standaard astitels die ook informatie over de informatie-inhoud van de assen levert
+
+
+## Opbouw van de plot laag-per-laag.
+
+###Sites
+
+De basislaag van de biplot zijn de sites, dit is de voorstelling van de observaties in de geordende multivariate ruimte. De wrapper functie gaat er standaard vanuit dat de species ook op het plot worden gezet (anders is het immers geen biplot) daarom dat species_geom op blank gezet wordt.
+
+
+```{r siteplot}
+
+site_data <- get_display_data(dune.rda, dune.desc, choices = 1:2, display = "sites")
+p1 <- ggplot(data = site_data, mapping = aes(x = RDA1, y = RDA2)) + 
+  geom_point()
+p2 <- ggplot(data = site_data, 
+             mapping = aes(x = RDA1, y = RDA2, label = Row.names, color = F2)) + 
+  geom_text()
+
+p3 <- ggbiplot_vegan(dune.rda, species_geom = "blank")
+p4 <- ggbiplot_vegan(dune.rda, site_data = dune.desc, site_merge_by = "row.names", site_geom = "text",
+                     site_mapping = aes(color = F2, label = Row.names), species_geom = "blank")
+
+gridExtra:: grid.arrange(p1,p2,p3,p4)
+
+```
+
+###Species
+
+De 2e laag van een biplot bestaat uit de "species-laag". Dit is een voorstelling van de variabelen van de multivariate dataset, in de soortenkunde zijn dit meestal de soorten, in andere multivariate analyses zijn dit variabelen die de eigenschappen van de observaties voorstellen (bv morfologie, bodemsamenstelling, ...). In soortenanalyse worden deze meestal als een label in de biplot toegevoegd, bij andere analyses zijn die vaak pijlen die tonen hoe de variabelen zich verhouden tot de observaties, maar de hoek tussen 2 pijlen is (met de default "species"-scaling) is een maat voor de correlatie in de voorgestelde assen.
+Net zoals bij de sites, kunnen deze gekleurd worden via een andere variabele in een opgegeven beschrijvende dataset.
+
+Om het maken van een biplot te vereenvoudigen voorziet het pakket een INBOmisc-eigen functie geom_arrow die een wrapper is rond geom_segment, en ervoor zorgt dat de pijlen uit de oorsprong vertrekken tot hun respectievelijke x,y-waarden. De labels voor de pijlen worden via een aparte laag geplot, die ook specifiek is aan het INBOmisc pakket, namelijk geom_arrowlabel, die de labels op de juiste plaats op de pijlen zal zetten.
+Het grootste voordeel van de wrapper is dat je niet meer manueel de \code{get_display_data} moet aanroepen alvorens je de biplot kan maken en dat je de namen van de geoms niet moet kennen, het nadeel is dat er veel argumenten nodig zijn als je afwijkt van de standaard voorziene plot.
+
+#### Werken met argumenten in de wrapper functie
+
+De biplot functionaliteit bevat enkele verschillende types aan argumenten
+
+#####  data- en modelselectie
+
+Allereerst moet je het vegan object selecteren (x), de askeuze maken (choicies) en het schaaltype definiëren (scaling).
+Eens deze keuze gemaakt is kan je de descriptor datasets voor sites (site_data) en species (species_data) definiëren en hoe deze samengevoegd moeten worden met het vegan-object (sites_merge_by en species_merge_by)
+
+##### geoms
+
+In een volgende stap kies je welke lagen je in de plot wil voorstellen. Je zet deze op "blank" als je deze niet wenst voor te stellen in de figuur. Voor de lagen zal je kiezen tussen blank, point, text, arrow en line.
+
+#####  mapping
+
+De mapping is de opdracht naar ggplot toe hoe de figuur moet opgebouwd worden. Dit is de gewone \code{aes} waarbij je x en y niet moet invullen, maar wel al kan aangeven volgens welke variabelen de figuur gegroepeerd moet worden. Als je tekst wil plotten mag je niet vergeten ook de label-variabele op te geven in de aes functie. De \code{get_display_data} functies zorgen ervoor dat er een data.frame gemaakt wordt voor de respectievelijke laag die telkens de variabelen Row.names en Row.number bevat, zodat deze ook in de \code{aes}, of \code{aes_string} functie gebruikt kunnen worden om de mapping op te bouwen.
+
+- site_mapping = aes(color = F1, size = F2, label = "Row.names")
+
+#####  varia
+
+De resterende variabelen zijn typische variabelen die de wijze van plotten nog iets meer van nabij bepalen
+- ellipse_level bepaalt op welk niveau van probabiliteit de ellipsen per groep worden getekend
+- species_abbrev bepaalt of je de soortennamen in de plot wil afkorten
+- base_colors bevat de basiskleuren van de plot wanneer er niet gegroepeerd wordt. Dit is een vector van 3 cijfers, het eerste voor de sites, het tweede voor de species en de derde voor de environmental variables.
+- ...
+
+
+
+
+
+
+```{r standaard biplot}
+site_data <- get_display_data(dune.rda, data = dune.desc, choices = 1:2, display="sites", scaling = 2, merge_by = "row.numbers")
+species_data <- get_display_data(dune.rda, dune.taxon, choices = 1:2, display = "species", scaling = 2, merge_by = "row.names")
+
+p <- 
+  ggplot(data = site_data, mapping = aes(x = RDA1, y = RDA2)) + 
+  geom_text(mapping= aes(color = F1, label = Row.names)) +
+  geom_arrow(data=species_data, mapping = aes(x=RDA1, y=RDA2, color = Class)) + 
+  geom_arrowlabel(data=species_data, mapping = aes(x=RDA1, y=RDA2, color = Class, label = Row.names))
+print(p)
+
+p <- ggbiplot_vegan(dune.rda, 
+                    site_data = dune.desc, site_merge_by = "row.numbers", site_geom = "text", site_mapping = aes(color = F1, label = Row.names),
+                    species_data = dune.taxon, species_merge_by = "row.names", species_mapping = aes(color = Class, label = Row.names))
+```
+
+
+### Omgevingsvariabelen
+
+```{r environment}
+p <- ggbiplot_vegan(dune.rda, 
+                    site_data = dune.desc, site_merge_by = "row.numbers", site_geom = "text", site_mapping = aes(color = F1, label = Row.names),
+                    species_data = dune.taxon, species_merge_by = "row.names", 
+                    species_geom = "text", species_mapping = aes(color = Class, label = Row.names),
+                    bp_geom = "arrow", cn_geom = "text",
+                    base_sizes = c(3,2,4))
+print(p)
+
+```
+
+
+### Alle lagen tesamen
+
+Hieronder wordt de code beschreven om een triplot te maken met alle lagen eraan toegevoegd. De lagen zijn:
+
+- originele sites als tekst of punten
+- sites als centroide als tekst of punten
+- ellipsen als groepering van sites
+- species (of andere community-variabelen) als pijlen of als tekst
+- species als labels bij de pijlen (enkel nuttig als je de species plot als pijlen)
+- correlatiecirkel
+- lineaire constraints op sites als tekst of punten
+- continue omgevingsvariabelen
+- factor omgevingsvariabelen
+
+```{r alleslaagperlaag}
+library(INBOmisc)
+library(vegan)
+library(ggplot2)
+set.seed(225)
+
+data(dune)
+data(dune.taxon)
+data(dune.env)
+dune.desc <- dune.env[c("Moisture", "Use", "Manure")]
+dune.envmodel <- dune.env[c("A1", "Management")]
+
+dune.rda <- rda(dune ~ A1 + Management, data = dune.envmodel) 
+dune.rda 
+
+site_data <- get_display_data(dune.rda, data = dune.desc, choices = 1:2, display="sites", scaling = 2, merge_by = "row.numbers")
+species_data <- get_display_data(dune.rda, dune.taxon, choices = 1:2, display = "species", scaling = 2, merge_by = "row.names")
+linear_constraints_sites<- get_display_data(dune.rda, choices = 1:2, display = "lc", scaling = "sites", merge_by = "row.numbers")
+environmental_vars <- get_display_data(dune.rda, choices = 1:2, display = "bp", scaling = 2)
+environmental_centroids <- get_display_data(dune.rda, choices = 1:2, display = "cn", scaling = 2)
+
+p <- 
+  ggplot(site_data, mapping = aes(x = RDA1, y = RDA2)) +
+  geom_point(mapping = aes(color = Use, shape = factor(Moisture))) + 
+  stat_centroid(mapping = aes(color = Use, label = Use)) +
+  stat_ellipse(mapping = aes(color = factor(Manure)), level = 0.68) +
+  geom_arrow(data = species_data, mapping = aes(x=RDA1, y=RDA2, color = Class)) + 
+  geom_arrowlabel(data = species_data, mapping = aes(x=RDA1, y=RDA2, color = Class, label = Row.names)) +
+  geom_corcircle(radius = attr(species_data, "r")) + 
+  geom_point(linear_constraints_sites, mapping = aes(x =RDA1, y = RDA2), alpha = 0.5, color = "darkgreen") +
+  geom_arrow(data = environmental_vars, mapping = aes(x=RDA1,y=RDA2), color = "blue") +
+  geom_arrowlabel(data = environmental_vars, mapping = aes(x=RDA1,y=RDA2), color = "blue") +
+  geom_text(data = environmental_centroids, mapping = aes(x=RDA1, y=RDA2, label = .level), color = "blue") +
+  coord_cartesian(xlim=c(-3,3), ylim=c(-3,3))
+print(p)
+
+```
+
+
+```{r alleswrapper}
+p <- 
+  ggbiplot_vegan(dune.rda, choices = 1:2, scaling = 2,
+                 site_data = dune.desc, site_merge_by = "row.numbers",
+                 site_geom = "point", site_mapping = aes(color = Use, shape = factor(Moisture)),
+                 centroid_geom = "text", centroid_mapping = aes(group = Use, color = Use, label = Use),#centroid werkt nog niet 100%
+                 ellipse_geom = "line", ellipse_mapping = aes(color = factor(Manure)),
+                 species_data = dune.taxon, species_merge_by = "row.names",
+                 species_geom = "arrow", species_mapping = aes(color = Class, label = Row.names),
+                 cor_circle_geom = "line",
+                 lc_geom = "point",
+                 bp_geom = "arrow",
+                 cn_geom = "text",
+                 base_sizes = c(2,2,3)) +
+    coord_cartesian(xlim=c(-3,3), ylim=c(-3,3))
+print(p)
+
+
+```
