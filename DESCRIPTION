@@ -1,0 +1,30 @@
+Package: inboggvegan
+Type: Package
+Title: GGplot functions
+Version: 0.5.0
+Date: 2017-10-19
+Author: Pieter Verschelde
+Maintainer: Pieter Verschelde <pieter.verschelde@inbo.be>
+Description: A work in development containing R functions for multivariate plots ...
+License: MIT License
+Depends:
+    R (>= 3.2.3)
+Imports:
+    stats,
+    utils,
+    vegan,
+    dplyr,
+    plyr,
+    grid,
+    ggplot2,
+    scales,
+    car,
+    reshape2
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat
+Roxygen: list(wrap = FALSE)
+LazyData: TRUE
+RoxygenNote: 6.0.1
+VignetteBuilder: knitr

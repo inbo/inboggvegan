@@ -1,0 +1,96 @@
+---
+title: "Visualisatie van vegan-objecten"
+author: "Pieter Verschelde"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vegan visualisatie}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+#Introductie
+
+Het vegan pakket biedt enkele visualisaties voor hun objecten, maar die zijn gebaseerd op de standaard plots, terwijl we op het INBO liever werken met ggplots.
+Daarom dat 2 belangrijke visualisaties zoals het creëren van een biplot en van een screeplot als functies in het INBOmisc pakket worden aangeboden. Deze zijn gebaseerd op het pakket <<INSERT-PACKAGE-REFERENCE>>.
+
+```{r settings, echo = FALSE}
+#knitr::opts_chunk$set(
+#  message = FALSE,
+#  fig.width = 7.1,
+#  fig.height = 5
+#)
+```
+
+#ggscreeplot
+
+##Inleiding
+De screeplot functie toont de hoeveelheid variatie verklaard wordt door de verschillende componenten in een multivaraite analyse. Dit kan ofwel cumulatief, ofwel per component de absolute waarde.
+De huidige implementatie van de functie "ggscreeplot" laat deze plot toe voor volgende objecten
+- vegan objecten
+  - rda
+  - cca
+  - capscale
+- standaard multivariate objecten
+  - prcomp
+  - princomp
+  - lda
+
+##Gebruik
+
+Hieronder maken we gewoon gebruik van de bij R meegeleverde data USArrests, waarop we een simpele PCA analyse uitvoeren.
+
+De resultaten van deze PCA kunnen op 3 manieren geplot worden met de functie *ggscreeplot*
+
+- type = "pev": Per as de verklaarde variantie
+- type = "cev": Per as de verklaarde variantie, cumulatief uitgezet
+- type = "both": Beiden samen op 1 figuur
+
+Omdat dit standaard ggplot figuren zijn kan je ook gebruik maken van heel wat ggplot functionaliteiten om de assen te herlabelen enzo.
+
+Doordat ggscreeplot al een scale_y_continuous bevat (= een defitie voor een y-as met continue waarden), zal ylab("astitel") niet werken, en zal je de scale_y_continuous moeten herdefinïeren en zal je ook een warning krijgen, maar het laat wel toe de figuur nog heel wat te customiseren.
+
+
+```{r fig.width = 8, fig.height = 8, fig.cap = "GGscreeplots"}
+#library(ggplot2)
+#library(INBOmisc)
+#library(gridExtra)
+#pcobj <- princomp(USArrests, cor = TRUE)
+#p1 <- ggscreeplot(pcobj, type = "pev")
+#p2 <- ggscreeplot(pcobj, type = "cev")
+#p3 <- ggscreeplot(pcobj, type = "both")
+#p4 <- ggscreeplot(pcobj, type = "both") + xlab("PC") + 
+#          scale_y_continuous("PEV", limits = 0:1, 
+#                             labels = scales::percent) +
+#                              scale_color_manual(values=c("blue","orange")) +
+#          ggtitle("Screeplot for the PCA of USarrests")
+#grid.arrange(p1,p2,p3,p4, ncol = 2, nrow = 2)
+```
+
+
+
+
+
+
+# Goal of these functions
+
+Although the vegan package has some nice functions to calculate ordinations, the visulalization functions are not always very nice to look at. Therefore we created some ggplot functions that can cope with vegan objects (rda, cca, capscale), more specific for creating a biplot and a screeplot. These functions are built upon the work of (INSERT REFERENCE HERE).
+
+#A first simple example
+
+```{r simpleExample, warning=FALSE, error=FALSE,message=FALSE}
+#library(vegan)
+#library(ggplot2)
+#library(INBOmisc)
+#data(varespec)
+#data(varechem)
+#vare.cca <- cca(varespec, varechem)
+#plot(vare.cca) #standard plot
+#ggbiplot.vegan(vare.cca) #ggplot
+
+```
+
+
+
+
+

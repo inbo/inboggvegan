@@ -1,0 +1,226 @@
+---
+title: "Code snippets for ggbiplot.vegan"
+author: "Hans Van Calster"
+date: "24 november 2016"
+output: html_document
+---
+
+# Data
+
+```{r}
+library(vegan)
+data(dune)
+data(dune.env)
+```
+
+```{r}
+str(dune)
+```
+
+
+
+```{r}
+str(dune.env)
+```
+
+Voor de testen, zowel een continue variabele (A1) als een factorvariabele gebruiken (Management).
+
+# rda analyse
+
+```{r}
+# rda analyse: vegan::rda() 
+############################
+dune.rda <- rda(dune ~ A1 + Management, data = dune.env) 
+dune.rda 
+# constrained rank = 4 = 1 + (4-1)
+# unconstrained rank = 15 (er zijn in feite 20
+# eigenwaarden, maar de laatste vijf eigenwaarden zijn 0)
+
+```
+
+# cca analyse
+
+```{r}
+# cca analyse: cca()
+###################
+dune.cca <- cca(dune ~ A1 + Management, dune.env)
+dune.cca
+
+```
+
+# dbRDA analyse
+
+```{r}
+# dbRDA analyse: capscale() 
+##########################
+# werkt enkel met model formula, standaard euclidische afstand
+dune.dbrda.bray <- capscale(dune ~ A1 + Management, data = dune.env,
+                            distance = "bray", sqrt.dist = TRUE) 
+dune.dbrda.bray
+
+
+
+```
+
+# syntax voor een partiële analyse
+
+```{r}
+# syntax voor een partiële analyse
+##################################
+dune.prda <- rda(dune ~ A1 + Management + Condition(Moisture), data = dune.env)
+
+```
+
+
+# functies die werken voor rda, cca en capscale objecten
+
+
+## Eigenwaarden opvragen
+
+```{r}
+# enkel de eigenwaarden opvragen:
+eigenvals(dune.rda) 
+```
+
+## Uitgebreide summary
+
+```{r}
+# uitgebreide summary met onder andere decompositie van de variantie
+# en de verschillende scores
+head(summary(dune.rda),5)
+```
+
+## Gebruik van scores() om de ordinatiescores op te vragen
+
+Toegepast op de rda analyse.
+
+```{r}
+# om de ordinatiescores op te vragen: scores()
+##############################################
+# de rijscores van de eerste twee assen in standaard coördinaten 
+# een alpha = 0 biplot of correlatie of covariantie biplot
+# dit zijn de rijscores met ruis
+rij_PC <- scores(x = dune.rda, choices = 1:2, display = "sites", 
+                 scaling = "species")
+# de overeenkomstige kolomscores in principale coördinaten
+kolom_SC <- scores(x = dune.rda, choices = 1:2, display = "species", 
+                   scaling = "species")
+
+# de rijscores van de eerste twee assen in principale coördinaten
+# een alpha = 1 biplot of form / distance biplot
+rij_SC <- scores(x = dune.rda, choices = 1:2, display = "sites", 
+                 scaling = "sites")
+# de overeenkomstige kolomscores in standaard coördinaten
+kolom_PC <- scores(x = dune.rda, choices = 1:2,
+                   display = "species", scaling = "sites")
+
+# alternatieve rijscores: lc = linear constraints 
+# (fitted site scores)
+rij_lc2 <- scores(dune.rda, display = "lc", scaling = "species", 
+                 choices=1:2)
+
+rij_lc1 <- scores(dune.rda, display = "lc", scaling = "sites", 
+                 choices=1:2)
+
+# scores voor verklarende variabelen
+# bp = biplot arrows (met factor variabelen als dummies, 
+# één minder dan aantal levels)
+env_bp <- scores(dune.rda, display = "bp", choices=1:2)
+
+# centroiden voor factorvariabelen 
+# (voor alle levels van de factor)
+env_cn <- scores(dune.rda, display = "cn", choices=1:2)
+```
+
+## scaling = "species" (= 2)
+
+```{r}
+par(mfrow = c(1,2))
+plot(rij_PC, main = "rows, principal coord.\n site scores")
+plot(kolom_SC, main = "columns, standard coord.")
+```
+
+
+```{r}
+par(mfrow = c(1,2))
+plot(rij_lc2, main = "rows, principal coord.\n fitted (lc) scores")
+plot(kolom_SC, main = "columns, standard coord.")
+```
+
+
+## scaling = "sites" (= 1)
+
+```{r}
+par(mfrow = c(1,2))
+plot(rij_SC, main = "rows, standard coord.\n site scores")
+plot(kolom_PC, main = "columns, principal coord.")
+```
+
+```{r}
+par(mfrow = c(1,2))
+plot(rij_lc1, main = "rows, standard coord.\n fitted (lc) scores")
+plot(kolom_PC, main = "columns, principal coord.")
+```
+
+## Biplot arrows and centroids for constraints
+
+```{r}
+par(mfrow = c(1,2))
+plot(env_bp, main = "posities van pijlpunten")
+plot(env_cn, main = "centroïden")
+```
+
+Iets duidelijker via plot van het rda model.
+
+```{r}
+par(mfrow = c(1,2))
+plot(dune.rda, display = "bp")
+plot(dune.rda, display = "cn")
+```
+
+Om het gecombineerd gedrag te bekomen (zowel pijlen als centroiden voor respectievelijk continue en factor variabelen), moet je display = c("bp", "cn") gebruiken.
+
+```{r}
+par(mfrow = c(1,2))
+plot(dune.rda, display = c("bp", "cn"))
+plot(dune.rda, display = "cn")
+```
+
+
+
+
+
+# Plotfuncties van vegan
+
+zie ?plot.cca:
+
+## S3 method for class 'cca'
+plot(x, choices = c(1, 2), display = c("sp", "wa", "cn"),
+     scaling = "species", type, xlim, ylim, const,
+     correlation = FALSE, hill = FALSE, ...)
+     
+Standaard is scaling = "species" en dat lijkt me ook het beste. De fitted (lc) scores worden standaard niet getoond, dat lijkt me ook een goede instelling.
+     
+## Standaard vegan plot voor rda analyse
+
+```{r}
+plot(dune.rda)
+```
+## Standaard vegan plot voor cca analyse
+
+
+```{r}
+plot(dune.cca)
+```
+## Standaard vegan plot voor dbRDA analyse
+```{r}
+plot(dune.dbrda.bray)
+```
+## Standaard vegan plot voor partiële rda analyse
+
+```{r}
+plot(dune.prda)
+```
+
+
+
