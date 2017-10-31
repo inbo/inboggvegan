@@ -28,8 +28,11 @@ get_display_data <- function(x,
                              species_adjust = 1.1,
                              remove_row_prefix = TRUE,
                              ...){
+  #Control input arguments
+  if (length(choices) != 2) stop("Choices must contain exactly 2 elements")
 
-
+  
+  
   #get the effective data
   display_data <- as.data.frame(vegan::scores(x, display = display, scaling = scaling, choices=choices))
   if(nrow(display_data) > 0){
@@ -86,7 +89,7 @@ get_display_data <- function(x,
       if (scaling == 2) {
         u.axis.labs = paste("standardized", colnames(display_data)[choices])
       } else {
-        u.axis.labs <- colnames(display_data)[1:2]
+        u.axis.labs <- colnames(display_data)[choices]
       }
       u.axis.labs <-
         paste(u.axis.labs,
@@ -114,8 +117,9 @@ get_display_data <- function(x,
       ###bp
     } else if (display == "bp"){
       q <- ncol(x$CCA$v)
+      #multiplier for the coordinates of the head of the vector to occumay fill proportion of the plot
       bp <- scores(x, display = "bp", scaling = scaling, choices=choices)
-      bp <- ordiArrowMul(bp, fill = 0.95) * bp #multiplier for the coordinates of the head of the vector to occumay fill proportion of the plot
+      bp <- ordiArrowMul(bp, fill = 0.95) * bp 
       #bp <- attr(bp, "const") * bp
       cn <- scores(x, display = "cn", scaling = scaling, choices=choices)
       if (!is.null(q)){

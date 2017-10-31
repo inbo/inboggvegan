@@ -12,7 +12,7 @@ vignette: >
 #Introductie
 
 Het vegan pakket biedt enkele visualisaties voor hun objecten, maar die zijn gebaseerd op de standaard plots, terwijl we op het INBO liever werken met ggplots.
-Daarom dat 2 belangrijke visualisaties zoals het creëren van een biplot en van een screeplot als functies in het INBOmisc pakket worden aangeboden. Deze zijn gebaseerd op het pakket <<INSERT-PACKAGE-REFERENCE>>.
+Daarom dat 2 belangrijke visualisaties zoals het creëren van een biplot en van een screeplot als functies in het inboggvegan pakket worden aangeboden. Deze zijn gebaseerd op het pakket <<INSERT-PACKAGE-REFERENCE>>.
 
 ```{r settings, echo = FALSE}
 #knitr::opts_chunk$set(
@@ -53,7 +53,6 @@ Doordat ggscreeplot al een scale_y_continuous bevat (= een defitie voor een y-as
 
 ```{r fig.width = 8, fig.height = 8, fig.cap = "GGscreeplots"}
 #library(ggplot2)
-#library(INBOmisc)
 #library(gridExtra)
 #pcobj <- princomp(USArrests, cor = TRUE)
 #p1 <- ggscreeplot(pcobj, type = "pev")
@@ -81,7 +80,6 @@ Although the vegan package has some nice functions to calculate ordinations, the
 ```{r simpleExample, warning=FALSE, error=FALSE,message=FALSE}
 #library(vegan)
 #library(ggplot2)
-#library(INBOmisc)
 #data(varespec)
 #data(varechem)
 #vare.cca <- cca(varespec, varechem)

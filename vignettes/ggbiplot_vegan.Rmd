@@ -16,7 +16,6 @@ In dit voorbeeld maken we gewoon een rda analyse met inclusie van omgevingsvaria
 ```{r data}
 library(vegan)
 library(ggplot2)
-library(INBOmisc)
 data(dune)
 data(dune.env)
 data(dune.taxon)
@@ -264,7 +263,6 @@ Hieronder wordt de code beschreven om een triplot te maken met alle lagen eraan 
 - factor omgevingsvariabelen
 
 ```{r alleslaagperlaag}
-library(INBOmisc)
 library(vegan)
 library(ggplot2)
 set.seed(225)

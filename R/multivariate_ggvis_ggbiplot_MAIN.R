@@ -224,13 +224,13 @@ ggbiplot_vegan.default <- function(
   ### Site centroid
   if (centroid_geom != "blank"){
     if        ( is.null(centroid_mapping$size) & is.null(centroid_mapping$colour)){
-      g <- g + INBOmisc::stat_centroid(mapping = centroid_mapping, data = df.u, color = base_colors[1], size = base_sizes[1])
+      g <- g + stat_centroid(mapping = centroid_mapping, data = df.u, color = base_colors[1], size = base_sizes[1])
     } else if (!is.null(centroid_mapping$size) & is.null(centroid_mapping$colour)){
-      g <- g + INBOmisc::stat_centroid(mapping = centroid_mapping, data = df.u, size = base_sizes[1])
+      g <- g + stat_centroid(mapping = centroid_mapping, data = df.u, size = base_sizes[1])
     } else if ( is.null(centroid_mapping$size) & !is.null(centroid_mapping$colour)){
-      g <- g + INBOmisc::stat_centroid(mapping = centroid_mapping, data = df.u, color = base_colors[1])
+      g <- g + stat_centroid(mapping = centroid_mapping, data = df.u, color = base_colors[1])
     } else {
-      g <- g + INBOmisc::stat_centroid(mapping = centroid_mapping, data = df.u)
+      g <- g + stat_centroid(mapping = centroid_mapping, data = df.u)
     }
   }
 
@@ -267,9 +267,9 @@ ggbiplot_vegan.default <- function(
       species_mapping$hjust <- as.symbol(".hjust")
       species_mapping$angle <- as.symbol(".angle")
       if (is.null(species_mapping$colour)){
-        g <- g + INBOmisc::geom_arrowlabel(data = df.v, mapping = species_mapping, inherit.aes = FALSE, color = base_colors[2])
+        g <- g + geom_arrowlabel(data = df.v, mapping = species_mapping, inherit.aes = FALSE, color = base_colors[2])
       } else {
-        g <- g + INBOmisc::geom_arrowlabel(data = df.v, mapping = species_mapping, inherit.aes = FALSE)
+        g <- g + geom_arrowlabel(data = df.v, mapping = species_mapping, inherit.aes = FALSE)
       }
     }
   } else  {

@@ -16,7 +16,6 @@
 
 #test ggbiplot.vegan
 # test_that("ggbiplot.vegan input",{
-#   library(INBOmisc)
 #   library(dplyr)
 #   library(vegan)
 #   data(varechem)

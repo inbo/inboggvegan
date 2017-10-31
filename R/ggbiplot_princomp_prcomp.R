@@ -159,23 +159,34 @@ function (x, y, choices = 1:2, var.axes = TRUE, col, cex = rep(par("cex"), 2), p
 
 
 
-##########################
-
+# ##########################
+# library(ggplot2)
+# theme_set(theme_bw())
 # Data <- read.csv2("G:\\Mijn Drive\\SUPPORT\\2017\\Kristine\\DataPCAPieter.csv")
 # pcadata <- Data[c("UIV","LIV","PL","LE")]
 # colordata <- Data[,"moSPadj", drop = FALSE]
-# 
+# #zet dit om naar een factor met de juiste volgorde van levels zodat de kleuren matchen met de rest van je paper
+# # 
 # pca <- prcomp(pcadata, scale. = TRUE)
 # summary(pca)
 # print(pca)
 # screeplot(pca)
-# 
+# # 
 # ggbiplot(pca)
 # ggbiplot(pca, colordata = colordata)
-# ggbiplot(pca, pch = 1, colordata = colordata )
+# ggsave(file = "standaard12.jpg", dpi =300, height = 7, width = 7 )
+# # ggbiplot(pca, pch = 1, colordata = colordata )
+# 
 # ggbiplot(pca, colordata = colordata, jitter = 3 , pch = 1) + facet_wrap(~moSPadj)
-# ggbiplot(pca, choices = c(1,3), colordata = colordata, jitter = 3, pch = 1)
+# ggsave(file = "gesplitst12_met_jitter.jpg", dpi =300, height = 7, width = 7 )
+# 
+# 
+# ggbiplot(pca, choices = c(1,3), colordata = colordata, jitter = 0, pch = 16)
+# ggsave(file = "standaard13.jpg", dpi =300, height = 7, width = 7 )
+# 
 # ggbiplot(pca, choices = c(1,3), colordata = colordata, jitter = 4, pch = 1) + facet_wrap(~moSPadj)
+# ggsave(file = "gesplitst13_met_jitter.jpg", dpi =300, height = 7, width = 7 )
+
 # 
 # 
 # ggbiplot(prcomp(iris[,1:4]), choices = 1:2, colordata = iris[,5,drop=FALSE])
