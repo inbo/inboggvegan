@@ -68,7 +68,7 @@ get_display_data <- function(x,
       }
     } else { #merge on rownames or variable
       print(paste(display, "merge by", merge_by))
-      if (!all(rownames(display_data) %in% data[,merge_by])){
+      if (!all(rownames(display_data) %in% as.data.frame(data)[,merge_by])){
         stop("Not all rownames of the display data are found in the merge_by column in the descriptor data")
       } else {
         display_data <- merge(display_data, data, by.x = "Row.names", by.y = merge_by, all.x = TRUE, sort = FALSE)
