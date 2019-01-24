@@ -36,7 +36,7 @@ get_display_data <- function(x,
   #get the effective data
   display_data <- as.data.frame(vegan::scores(x, display = display, scaling = scaling, choices=choices))
   if(nrow(display_data) > 0){
-    if(all(substring(rownames(display_data),1,3) == "row") & remove_row_prefix == TRUE) {
+    if(all(substring(rownames(display_data),1,3) %in% c("row", "sit")) & remove_row_prefix == TRUE) {
       rownames(display_data) <- substring(rownames(display_data), 4, nchar(rownames(display_data)))
     }
     display_data$Row.names <- rownames(display_data)
@@ -68,7 +68,7 @@ get_display_data <- function(x,
       }
     } else { #merge on rownames or variable
       print(paste(display, "merge by", merge_by))
-      if (!all(rownames(display_data) %in% data[,merge_by])){
+      if (!all(rownames(display_data) %in% as.data.frame(data)[,merge_by])){
         stop("Not all rownames of the display data are found in the merge_by column in the descriptor data")
       } else {
         display_data <- merge(display_data, data, by.x = "Row.names", by.y = merge_by, all.x = TRUE, sort = FALSE)
