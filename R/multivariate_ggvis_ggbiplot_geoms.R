@@ -73,7 +73,7 @@ geom_corcircle <- function(radius, resolution = 200, ...){
 
 #' Title
 #'
-#' @param Set of aesthetic mappings created by aes or aes_. If specified and inherit.aes = TRUE (the default), it is combined with the default mapping at the top level of the plot. You must supply mapping if there is no plot mapping.
+#' @param mapping zie ggplot
 #' @param data The data to be displayed in this layer
 #' @param inherit.aes If FALSE, overrides the default aesthetics, rather than combining with them. For creating a biplot this should be FALSE.
 #' @param arrow_size size of the arrow heads

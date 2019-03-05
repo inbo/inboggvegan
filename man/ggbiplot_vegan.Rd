@@ -5,6 +5,8 @@
 \alias{ggbiplot_vegan.rda}
 \alias{ggbiplot_vegan.cca}
 \alias{ggbiplot_vegan.capscale}
+\alias{ggbiplot_vegan.princomp}
+\alias{ggbiplot_vegan.prcomp}
 \alias{ggbiplot_vegan.default}
 \title{GGbiplot prototype function}
 \usage{
@@ -16,6 +18,10 @@ ggbiplot_vegan(x, ...)
 
 \method{ggbiplot_vegan}{capscale}(x, ...)
 
+\method{ggbiplot_vegan}{princomp}(x, ...)
+
+\method{ggbiplot_vegan}{prcomp}(x, ...)
+
 \method{ggbiplot_vegan}{default}(x, choices = 1:2, scaling = 2,
   site_data = NULL, site_merge_by = "row.names", species_data = NULL,
   species_merge_by = "row.names", site_geom = "point",
@@ -23,11 +29,12 @@ ggbiplot_vegan(x, ...)
   centroid_mapping = aes(group = 1), ellipse_geom = "blank",
   ellipse_mapping = NULL, species_geom = "arrow",
   species_mapping = aes(label = Row.names), cor_circle_geom = "blank",
-  cor_circle_mapping = NULL, lc_geom = "blank", lc_mapping = aes(label =
-  Row.names), bp_geom = "blank", bp_mapping = NULL, cn_geom = "blank",
-  cn_mapping = aes(label = .level), species_abbrev = FALSE,
-  species_adjust = 1.1, ellipse_level = 0.68, base_colors = c("black",
-  "red", "blue"), base_shapes = c(16, 16, 16), base_sizes = c(2, 2, 2),
+  cor_circle_mapping = NULL, lc_geom = "blank",
+  lc_mapping = aes(label = Row.names), bp_geom = "blank",
+  bp_mapping = NULL, cn_geom = "blank", cn_mapping = aes(label =
+  .level), species_abbrev = FALSE, species_adjust = 1.1,
+  ellipse_level = 0.68, base_colors = c("black", "red", "blue"),
+  base_shapes = c(16, 16, 16), base_sizes = c(2, 2, 2),
   legend_position = "right", ...)
 }
 \arguments{
@@ -92,77 +99,7 @@ ggbiplot_vegan(x, ...)
 \item{base_sizes}{vector of 3 elements  with the base sizes for sites, species and environmental variables}
 
 \item{legend_position}{position of the legend "top", "bottom", "left", "right", "none"}
-
-\item{x}{vegan object}
-
-\item{choices}{which 2 components schould be visualized}
-
-\item{scaling}{used scaling (1  = site, 2 = species (default)). If scaling = 2, than the angle of the species (variables) matches the correlation}
-
-\item{site_data}{descriptor data for the sites}
-
-\item{site_merge_by}{merge the site descriptor with the vegan object on .Rownumbers (cbind), .Rownames or any other column (merge this column with the site scores matrix rownames)}
-
-\item{species_data}{descriptor data for the species}
-
-\item{species_merge_by}{merge species data (see site_merge_by)}
-
-\item{site_geom}{which geom to represent the sites "blank", "point", "text"}
-
-\item{site_mapping}{ggplot mapping in the format aes() but x and y must not be given, so for example (aes(color = Kolom1, size = Kolom2, label = Kolom3)). This should always contain the label argument if the geom is "text"}
-
-\item{centroid_geom}{representation of the site centroids ("blank", "point", "text")}
-
-\item{centroid_mapping}{ggplot mapping for the centroids (see site_mapping)}
-
-\item{ellipse_geom}{representation of the site probability density ellipses ("blank", "line")}
-
-\item{ellipse_mapping}{ggplot mapping for the ellipses}
-
-\item{species_geom}{representation of the species (or biometric variables) ("blank", "text", "arrow", "point")}
-
-\item{species_mapping}{ggplot mapping for the species}
-
-\item{cor_circle_geom}{representation of the correlation circle ("blank", "line")}
-
-\item{cor_circle_mapping}{ggplot mapping for the correlation circle}
-
-\item{lc_geom}{representation of linear constraints (see site_geom)}
-
-\item{lc_mapping}{see site_mapping but for the linear constraints}
-
-\item{bp_geom}{representation of the continuous environmental variables ("blank", "arrow", "text", "point")}
-
-\item{bp_mapping}{mapping of the continuous environmental variables}
-
-\item{cn_geom}{representation of the discrete environmental variables}
-
-\item{cn_mapping}{mapping of the discrete environmental variables}
-
-\item{species_abbrev}{logical that controls if species names (or variables when not working with vegetation data) should be abbreviated}
-
-\item{species_adjust}{adjustment of the species labels so they do not collide with the arrows}
-
-\item{ellipse_level}{probability density on which the ellipses should be based. 0.68 or 0.95 are the most logical choices (1 or 2 sd from the centroids)}
-
-\item{base_colors}{vector of 3 elements with the base colors of sites, species and environmental variables}
-
-\item{base_shapes}{vector of 3 elements with the base shapes for sites, species and environmental variables}
-
-\item{base_sizes}{vector of 3 elements  with the base sizes for sites, species and environmental variables}
-
-\item{legend_position}{position of the legend "top", "bottom", "left", "right", "none"}
-
-\item{...}{other arguments for ggbiplot_vegan.default}
 }
 \description{
-GGbiplot prototype function
-
-GGbiplot for rda objects
-
-GGbiplot for cca objects
-
-GGbiplot for capscale objects
-
 Wrapper function around all geoms to construct a ggplot for vegan objects (rda, cca, capscale)
 }

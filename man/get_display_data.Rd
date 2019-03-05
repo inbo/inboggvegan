@@ -5,11 +5,30 @@
 \title{Title}
 \usage{
 get_display_data(x, data = NULL, choices = 1:2, display = "sites",
-  scaling = "species", merge_by = "row.numbers", species_abbrev = FALSE,
-  species_adjust = 1.1, remove_row_prefix = TRUE, ...)
+  scaling = "species", merge_by = "row.numbers",
+  species_abbrev = FALSE, species_adjust = 1.1,
+  remove_row_prefix = TRUE, ...)
 }
 \arguments{
-\item{...}{}
+\item{x}{object}
+
+\item{data}{descriptor dataset}
+
+\item{choices}{which axes (vector of length 2)}
+
+\item{display}{sites | species | lc | bp | cn}
+
+\item{scaling}{??}
+
+\item{merge_by}{merge rownames of object scores with this column in the descriptor dataset}
+
+\item{species_abbrev}{should the species axes names be abbreviated}
+
+\item{species_adjust}{text adjustment to avoid overlap with arrows}
+
+\item{remove_row_prefix}{remove the default row prefix "Row"}
+
+\item{...}{other arguments passed to the vegan::scores function}
 }
 \description{
 Title

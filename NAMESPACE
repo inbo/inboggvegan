@@ -3,6 +3,8 @@
 S3method(ggbiplot_vegan,capscale)
 S3method(ggbiplot_vegan,cca)
 S3method(ggbiplot_vegan,default)
+S3method(ggbiplot_vegan,prcomp)
+S3method(ggbiplot_vegan,princomp)
 S3method(ggbiplot_vegan,rda)
 export(geom_arrow)
 export(geom_arrowlabel)

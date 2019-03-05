@@ -7,7 +7,19 @@
 geom_selector(mapping, data, geom, base_color, base_shape, base_size, ...)
 }
 \arguments{
-\item{...}{}
+\item{mapping}{zie ggplot}
+
+\item{data}{zie ggplot}
+
+\item{geom}{welke geom wil je gebruiken: text | point | blank | line | path}
+
+\item{base_color}{basiskleur grafiek}
+
+\item{base_shape}{standaardsymbool}
+
+\item{base_size}{standaard symboolgrootte}
+
+\item{...}{andere parameters die gebruikt worden door ggplot geoms}
 }
 \description{
 Title

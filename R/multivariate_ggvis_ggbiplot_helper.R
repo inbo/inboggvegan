@@ -3,16 +3,16 @@
 
 #' Title
 #'
-#' @param x
-#' @param data
-#' @param choices
-#' @param display
-#' @param scaling
-#' @param merge_by
-#' @param species_abbrev
-#' @param species_adjust
-#' @param remove_row_prefix
-#' @param ...
+#' @param x object
+#' @param data descriptor dataset
+#' @param choices which axes (vector of length 2)
+#' @param display sites | species | lc | bp | cn
+#' @param scaling ??
+#' @param merge_by merge rownames of object scores with this column in the descriptor dataset
+#' @param species_abbrev should the species axes names be abbreviated
+#' @param species_adjust text adjustment to avoid overlap with arrows
+#' @param remove_row_prefix remove the default row prefix "Row"
+#' @param ... other arguments passed to the vegan::scores function
 #'
 #' @return
 #' @export
@@ -192,13 +192,13 @@ get_display_data <- function(x,
 
 #' Title
 #'
-#' @param mapping
-#' @param data
-#' @param geom
-#' @param base_color
-#' @param base_shape
-#' @param base_size
-#' @param ...
+#' @param mapping zie ggplot
+#' @param data zie ggplot
+#' @param geom welke geom wil je gebruiken: text | point | blank | line | path
+#' @param base_color basiskleur grafiek
+#' @param base_shape standaardsymbool
+#' @param base_size  standaard symboolgrootte
+#' @param ... andere parameters die gebruikt worden door ggplot geoms
 #'
 #' @return
 #' @export

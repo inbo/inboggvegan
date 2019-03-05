@@ -7,6 +7,8 @@
 geom_arrow(mapping, data, inherit.aes = FALSE, arrow_size = 0.5, ...)
 }
 \arguments{
+\item{mapping}{zie ggplot}
+
 \item{data}{The data to be displayed in this layer}
 
 \item{inherit.aes}{If FALSE, overrides the default aesthetics, rather than combining with them. For creating a biplot this should be FALSE.}
@@ -14,8 +16,6 @@ geom_arrow(mapping, data, inherit.aes = FALSE, arrow_size = 0.5, ...)
 \item{arrow_size}{size of the arrow heads}
 
 \item{...}{other arguments passed on to layer.}
-
-\item{Set}{of aesthetic mappings created by aes or aes_. If specified and inherit.aes = TRUE (the default), it is combined with the default mapping at the top level of the plot. You must supply mapping if there is no plot mapping.}
 }
 \description{
 Title

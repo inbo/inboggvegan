@@ -5,38 +5,6 @@
 
 #' GGbiplot prototype function
 #'
-#' @param x vegan object
-#' @param choices which 2 components schould be visualized
-#' @param scaling used scaling (1  = site, 2 = species (default)). If scaling = 2, than the angle of the species (variables) matches the correlation
-#' @param site_data descriptor data for the sites
-#' @param site_merge_by merge the site descriptor with the vegan object on .Rownumbers (cbind), .Rownames or any other column (merge this column with the site scores matrix rownames)
-#' @param species_data descriptor data for the species
-#' @param species_merge_by merge species data (see site_merge_by)
-#' @param site_geom which geom to represent the sites "blank", "point", "text"
-#' @param site_mapping ggplot mapping in the format aes() but x and y must not be given, so for example (aes(color = Kolom1, size = Kolom2, label = Kolom3)). This should always contain the label argument if the geom is "text"
-#' @param centroid_geom representation of the site centroids ("blank", "point", "text")
-#' @param centroid_mapping ggplot mapping for the centroids (see site_mapping)
-#' @param ellipse_geom representation of the site probability density ellipses ("blank", "line")
-#' @param ellipse_mapping ggplot mapping for the ellipses
-#' @param species_geom representation of the species (or biometric variables) ("blank", "text", "arrow", "point")
-#' @param species_mapping ggplot mapping for the species
-#' @param cor_circle_geom representation of the correlation circle ("blank", "line")
-#' @param cor_circle_mapping ggplot mapping for the correlation circle
-#' @param lc_geom representation of linear constraints (see site_geom)
-#' @param lc_mapping see site_mapping but for the linear constraints
-#' @param bp_geom representation of the continuous environmental variables ("blank", "arrow", "text", "point")
-#' @param bp_mapping mapping of the continuous environmental variables
-#' @param cn_geom representation of the discrete environmental variables
-#' @param cn_mapping mapping of the discrete environmental variables
-#' @param species_abbrev logical that controls if species names (or variables when not working with vegetation data) should be abbreviated
-#' @param species_adjust adjustment of the species labels so they do not collide with the arrows
-#' @param ellipse_level probability density on which the ellipses should be based. 0.68 or 0.95 are the most logical choices (1 or 2 sd from the centroids)
-#' @param base_colors vector of 3 elements with the base colors of sites, species and environmental variables
-#' @param base_shapes vector of 3 elements with the base shapes for sites, species and environmental variables
-#' @param base_sizes  vector of 3 elements  with the base sizes for sites, species and environmental variables
-#' @param legend_position position of the legend "top", "bottom", "left", "right", "none"
-#' @param ... other arguments for ggbiplot_vegan.default
-#'
 #' @return
 #' @export
 #'
@@ -75,6 +43,7 @@ ggbiplot_vegan.cca <- function(x, ...)
 
 ######################################################################
 
+
 #' GGbiplot for capscale objects
 #'
 #' @method ggbiplot_vegan capscale
@@ -84,6 +53,38 @@ ggbiplot_vegan.capscale <- function(x, ...)
 {
   ggbiplot_vegan.default(x, ...)
 }
+
+
+######################################################################
+
+
+#' GGbiplot for princomp objects
+#'
+#' @method ggbiplot_vegan princomp
+#' @export
+#' @rdname  ggbiplot_vegan
+ggbiplot_vegan.princomp <- function(x, ...)
+{
+  ggbiplot.princomp(x, ...)
+}
+
+
+
+######################################################################
+
+
+#' GGbiplot for prcomp objects
+#'
+#' @method ggbiplot_vegan prcomp
+#' @export
+#' @rdname  ggbiplot_vegan
+ggbiplot_vegan.prcomp <- function(x, ...)
+{
+  ggbiplot.prcomp(x, ...)
+}
+
+
+######################################################################
 
 
 ###############################################################################
