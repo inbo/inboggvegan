@@ -9,8 +9,8 @@ Description: A work in development containing R functions for multivariate plots
 License: MIT License
 Depends: R (>= 3.2.3)
 Imports:
-stats,
-    utils,
+ stats,
+ utils,
     vegan,
     dplyr,
     plyr,
