@@ -87,9 +87,9 @@ get_display_data <- function(x,
     ###sites
     if (display == "sites"){
       if (scaling == 2) {
-        u.axis.labs = paste("standardized", colnames(display_data)[choices])
+        u.axis.labs = paste("standardized", colnames(display_data)[1:2])
       } else {
-        u.axis.labs <- colnames(display_data)[choices]
+        u.axis.labs <- colnames(display_data)[1:2]
       }
       u.axis.labs <-
         paste(u.axis.labs,
