@@ -268,9 +268,12 @@ ggbiplot_vegan.default <- function(
       species_mapping$hjust <- as.symbol(".hjust")
       species_mapping$angle <- as.symbol(".angle")
       if (is.null(species_mapping$colour)){
-        g <- g + geom_arrowlabel(data = df.v, mapping = species_mapping, inherit.aes = FALSE, color = base_colors[2])
+        g <- g + geom_arrowlabel(data = df.v, mapping = species_mapping, inherit.aes = FALSE,
+                                 color = base_colors[2],
+                                 size = base_sizes[2])
       } else {
-        g <- g + geom_arrowlabel(data = df.v, mapping = species_mapping, inherit.aes = FALSE)
+        g <- g + geom_arrowlabel(data = df.v, mapping = species_mapping, inherit.aes = FALSE,
+                                size = base_sizes[2])
       }
     }
   } else  {
