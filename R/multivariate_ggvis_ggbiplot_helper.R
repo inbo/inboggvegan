@@ -26,8 +26,8 @@
 #'   See \code{vegan::scores()} for details.
 #' @param merge_by Character string specifying how to merge the descriptor data:
 #'   \itemize{
-#'     \item "row.numbers" - merge by row position (cbind)
-#'     \item "row.names" - merge by matching row names (default)
+#'     \item "row.numbers" (default) - merge by row position (cbind)
+#'     \item "row.names" - merge by matching row names
 #'     \item Any column name - merge by matching values in that column
 #'   }
 #' @param species_abbrev Logical; if TRUE, abbreviate species names in the output

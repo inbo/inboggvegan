@@ -223,7 +223,8 @@ ggbiplot_vegan(dune.rda,
 
 ## Choosing Different Axes
 
-By default, axes 1 and 2 are displayed. You can choose different axes:
+By default, axes 1 and 2 are displayed. If the ordination object has at least 
+three axes, you can plot different axis combinations:
 
 ```{r different_axes}
 # If there are enough axes, you can plot different combinations
