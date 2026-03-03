@@ -294,7 +294,7 @@ These can be used to create completely custom visualizations if needed.
 The `inboggvegan` package provides two main visualization functions:
 
 1. **`ggscreeplot()`** - Visualize variance explained by components
-   - Works with prcomp, princomp, rda, cca, capscale, lda
+   - Works with prcomp, princomp, rda, cca, capscale (and lda from MASS package)
    - Three types: "pev", "cev", "both"
    - Fully customizable with ggplot2
 
