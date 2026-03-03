@@ -84,8 +84,8 @@ stat_centroid <- function(mapping = NULL, data = NULL, geom = "text",
 #'
 #' Draws a circle representing the correlation structure in a biplot.
 #' When scaling = 2, variables (species) with endpoints on or near this circle
-#' show high correlation with the ordination axes. The circle radius is typically
-#' the maximum length of the species vectors.
+#' are well-represented by the displayed axes (have high communality). The circle 
+#' radius is typically the maximum length of the species vectors.
 #'
 #' @param radius Numeric value specifying the radius of the circle.
 #'   Typically computed as the maximum length of species vectors in the biplot.

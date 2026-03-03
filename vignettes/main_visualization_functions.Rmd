@@ -210,7 +210,8 @@ ggbiplot_vegan(dune.cca,
 ## Correlation Circle
 
 When using scaling = 2, you can add a correlation circle. Species with 
-endpoints on or near this circle show high correlation with the ordination axes:
+endpoints on or near this circle are well-represented by the displayed axes 
+(have high communality for these axes):
 
 ```{r cor_circle}
 ggbiplot_vegan(dune.rda,
