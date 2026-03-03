@@ -10,22 +10,51 @@
 #                        required_aes = c("x", "y", "label")
 # )
 
-#' Title
+#' Compute and display centroids for grouped data
 #'
-#' @param mapping typical mapping construct for ggplots. Typical in the form of "aes(x=, y=, color=, ...)"
-#' @param data data to plot
-#' @param geom how to visualize the data. "point" for points, "text" for labels
-#' @param position Position adjustment, either as a string, or the result of a call to a position adjustment function. In these plots this will mostly be "identity"
-#' @param na.rm If FALSE, the default, missing values are removed with a warning. If TRUE, missing values are silently removed.
-#' @param show.legend logical. Should this layer be included in the legends? NA, the default, includes if any aesthetics are mapped. FALSE never includes, and TRUE always includes.
-#' @param inherit.aes If FALSE, overrides the default aesthetics, rather than combining with them. For creating a biplot this should be FALSE.
-#' @param ... other arguments passed on to layer.
+#' This stat computes the centroid (mean x and y coordinates) for each group
+#' in the data and displays it as text or points. Useful for showing group
+#' centers in ordination plots.
 #'
-#' @return
+#' @param mapping ggplot2 aesthetic mapping created with \code{aes()}.
+#'   Required aesthetics: x, y, and label (or group)
+#' @param data Data frame containing the data to plot
+#' @param geom Character string specifying how to display centroids:
+#'   "text" (default) for labels, or "point" for points
+#' @param position Position adjustment, either as a string or the result of
+#'   a call to a position adjustment function (default: "identity")
+#' @param na.rm Logical; if FALSE (default), missing values are removed with
+#'   a warning. If TRUE, missing values are silently removed.
+#' @param show.legend Logical; should this layer be included in the legends?
+#'   NA (default) includes if any aesthetics are mapped. FALSE never includes,
+#'   TRUE always includes.
+#' @param inherit.aes Logical; if FALSE, overrides the default aesthetics rather
+#'   than combining with them. Should typically be TRUE (default).
+#' @param ... Additional arguments passed to \code{ggplot2::layer()}
+#'
+#' @return A ggplot2 layer that can be added to a ggplot object
+#'
 #' @importFrom ggplot2 layer
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' library(ggplot2)
+#' library(vegan)
+#' data(varespec)
+#' data(varechem)
+#' 
+#' vare.rda <- rda(varespec)
+#' site_data <- get_display_data(vare.rda, display = "sites")
+#' 
+#' # Add a grouping variable
+#' site_data$group <- rep(c("A", "B"), length.out = nrow(site_data))
+#' 
+#' ggplot(site_data, aes(x = RDA1, y = RDA2, color = group)) +
+#'   geom_point() +
+#'   stat_centroid(aes(label = group))
+#' }
+#'
 stat_centroid <- function(mapping = NULL, data = NULL, geom = "text",
                           position = "identity", na.rm = FALSE, show.legend = NA,
                           inherit.aes = TRUE, ...) {
@@ -51,16 +80,46 @@ stat_centroid <- function(mapping = NULL, data = NULL, geom = "text",
 
 ### COR CIRCLE ###
 
-#' Title
+#' Add a correlation circle to a biplot
 #'
-#' @param radius numeric radius of the correlation circle.
-#' @param resolution how many points to use to draw the circle
-#' @param ... other arguments passed on to layer.
+#' Draws a circle representing the correlation structure in a biplot.
+#' When scaling = 2, variables (species) with endpoints on or near this circle
+#' show high correlation with the ordination axes. The circle radius is typically
+#' the maximum length of the species vectors.
 #'
-#' @return
+#' @param radius Numeric value specifying the radius of the circle.
+#'   Typically computed as the maximum length of species vectors in the biplot.
+#' @param resolution Integer specifying the number of points to use for drawing
+#'   the circle (default: 200). Higher values create smoother circles.
+#' @param ... Additional arguments passed to \code{geom_path()}, such as color,
+#'   linetype, or size
+#'
+#' @return A ggplot2 path layer representing the correlation circle
+#'
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' library(ggplot2)
+#' library(vegan)
+#' data(varespec)
+#' 
+#' vare.rda <- rda(varespec)
+#' 
+#' # Basic biplot with correlation circle
+#' ggbiplot_vegan(vare.rda, 
+#'                scaling = 2,
+#'                cor_circle_geom = "line")
+#' 
+#' # Or add manually
+#' species_data <- get_display_data(vare.rda, display = "species", scaling = 2)
+#' r <- sqrt(max(rowSums(species_data[,1:2]^2)))
+#' 
+#' ggplot(species_data, aes(x = RDA1, y = RDA2)) +
+#'   geom_arrow(aes(x = RDA1, y = RDA2), species_data) +
+#'   geom_corcircle(radius = r, color = "red", linetype = "dashed")
+#' }
+#'
 geom_corcircle <- function(radius, resolution = 200, ...){
   #radius = sqrt(max(rowSums(df.v[,1:2])^2))
   theta <- c(seq(-pi, pi, length = resolution), seq(pi, -pi, length = resolution))
@@ -71,18 +130,43 @@ geom_corcircle <- function(radius, resolution = 200, ...){
 
 ### SPECIES ARROWS ###
 
-#' Title
+#' Draw arrows for biplot vectors
 #'
-#' @param mapping zie ggplot
-#' @param data The data to be displayed in this layer
-#' @param inherit.aes If FALSE, overrides the default aesthetics, rather than combining with them. For creating a biplot this should be FALSE.
-#' @param arrow_size size of the arrow heads
-#' @param ... other arguments passed on to layer.
+#' Creates arrow segments from the origin (0,0) to specified points,
+#' typically used to represent species/variable loadings or environmental
+#' variable effects in ordination biplots.
 #'
-#' @return
+#' @param mapping ggplot2 aesthetic mapping created with \code{aes()}.
+#'   Must include x and y coordinates for arrow endpoints. Can also include
+#'   color, size, linetype, etc.
+#' @param data Data frame containing the arrow endpoint coordinates and
+#'   any variables referenced in the mapping
+#' @param inherit.aes Logical; if FALSE (default for biplots), overrides
+#'   the default aesthetics rather than combining with them
+#' @param arrow_size Numeric value specifying the size of arrow heads
+#'   in picas (default: 0.5)
+#' @param ... Additional arguments passed to \code{geom_segment()}, such as
+#'   color, linetype, or alpha
+#'
+#' @return A ggplot2 segment layer with arrows
+#'
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' library(ggplot2)
+#' library(vegan)
+#' data(varespec)
+#' 
+#' vare.rda <- rda(varespec)
+#' species_data <- get_display_data(vare.rda, display = "species")
+#' 
+#' ggplot() +
+#'   geom_arrow(aes(x = RDA1, y = RDA2), data = species_data, 
+#'              color = "red", arrow_size = 0.3) +
+#'   coord_equal()
+#' }
+#'
 geom_arrow <- function(mapping, data, inherit.aes = FALSE, arrow_size = 0.5, ...){
   mapping$xend <- mapping$x
   mapping$yend <- mapping$y
@@ -93,17 +177,45 @@ geom_arrow <- function(mapping, data, inherit.aes = FALSE, arrow_size = 0.5, ...
 }
 
 
-#' Title
+#' Add labels to biplot arrows
 #'
-#' @param mapping typical mapping construct for ggplots. Typical in the form of "aes(x=, y=, color=, ...)"
-#' @param data The data to be displayed in this layer
-#' @param inherit.aes If FALSE, overrides the default aesthetics, rather than combining with them. For creating a biplot this should be FALSE.
-#' @param ... other arguments passed on to layer.
+#' Adds text labels at the endpoints of biplot arrows with appropriate
+#' horizontal justification and rotation angle to avoid overlap with the arrows.
+#' Typically used in conjunction with \code{geom_arrow()} to label species or
+#' environmental variables.
 #'
-#' @return
+#' @param mapping ggplot2 aesthetic mapping created with \code{aes()}.
+#'   Must include x, y, and label. The .hjust and .angle variables will be
+#'   automatically added from the data if present (created by \code{get_display_data()}).
+#' @param data Data frame containing coordinates, labels, and positioning
+#'   information (.hjust and .angle columns)
+#' @param inherit.aes Logical; if FALSE (default for biplots), overrides
+#'   the default aesthetics rather than combining with them
+#' @param ... Additional arguments passed to \code{geom_text()}, such as
+#'   color, size, or fontface
+#'
+#' @return A ggplot2 text layer positioned for arrow labels
+#'
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' library(ggplot2)
+#' library(vegan)
+#' data(varespec)
+#' 
+#' vare.rda <- rda(varespec)
+#' # get_display_data automatically adds .hjust and .angle columns
+#' species_data <- get_display_data(vare.rda, display = "species", 
+#'                                  species_adjust = 1.1)
+#' 
+#' ggplot() +
+#'   geom_arrow(aes(x = RDA1, y = RDA2), data = species_data, color = "red") +
+#'   geom_arrowlabel(aes(x = RDA1, y = RDA2, label = Row.names), 
+#'                   data = species_data, color = "red") +
+#'   coord_equal()
+#' }
+#'
 geom_arrowlabel <- function(mapping, data, inherit.aes = FALSE, ...){
   mapping$hjust <- as.symbol(".hjust")
   mapping$angle <- as.symbol(".angle")

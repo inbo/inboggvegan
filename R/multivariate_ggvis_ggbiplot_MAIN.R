@@ -3,12 +3,31 @@
 
 #####################################################################
 
-#' GGbiplot prototype function
+#' Create a ggplot-based biplot for multivariate analysis objects
 #'
-#' @return
+#' This function creates biplots (visualization of both observations and variables)
+#' for various multivariate analysis objects including vegan ordination objects
+#' (rda, cca, capscale) and standard R PCA objects (prcomp, princomp).
+#'
+#' @param x An ordination object. Can be of class rda, cca, capscale (from vegan package),
+#'   prcomp, or princomp (from stats package).
+#' @param ... Additional arguments passed to specific methods
+#'
+#' @return A ggplot object representing the biplot
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' # Example with iris data using prcomp
+#' pca <- prcomp(iris[,1:4], scale. = TRUE)
+#' ggbiplot_vegan(pca)
+#'
+#' # Example with vegan rda
+#' library(vegan)
+#' data(varespec)
+#' vare.rda <- rda(varespec)
+#' ggbiplot_vegan(vare.rda)
+#' }
 #' @rdname ggbiplot_vegan
 ggbiplot_vegan <- function(x,  ...) {
     UseMethod("ggbiplot_vegan")
@@ -16,7 +35,7 @@ ggbiplot_vegan <- function(x,  ...) {
 
 ######################################################################
 
-#' GGbiplot for rda objects
+#' @describeIn ggbiplot_vegan Method for rda (Redundancy Analysis) objects from vegan package
 #'
 #' @method ggbiplot_vegan rda
 #' @export
@@ -30,7 +49,7 @@ ggbiplot_vegan.rda <- function(x, ...)
 ######################################################################
 
 
-#' GGbiplot for cca objects
+#' @describeIn ggbiplot_vegan Method for cca (Canonical Correspondence Analysis) objects from vegan package
 #'
 #' @method ggbiplot_vegan cca
 #' @export
@@ -44,7 +63,7 @@ ggbiplot_vegan.cca <- function(x, ...)
 ######################################################################
 
 
-#' GGbiplot for capscale objects
+#' @describeIn ggbiplot_vegan Method for capscale (Canonical Analysis of Principal Coordinates) objects from vegan package
 #'
 #' @method ggbiplot_vegan capscale
 #' @export
@@ -58,7 +77,7 @@ ggbiplot_vegan.capscale <- function(x, ...)
 ######################################################################
 
 
-#' GGbiplot for princomp objects
+#' @describeIn ggbiplot_vegan Method for princomp (Principal Components Analysis using correlation/covariance matrix) objects
 #'
 #' @method ggbiplot_vegan princomp
 #' @export
@@ -73,7 +92,7 @@ ggbiplot_vegan.princomp <- function(x, ...)
 ######################################################################
 
 
-#' GGbiplot for prcomp objects
+#' @describeIn ggbiplot_vegan Method for prcomp (Principal Components Analysis using SVD) objects
 #'
 #' @method ggbiplot_vegan prcomp
 #' @export
@@ -88,45 +107,93 @@ ggbiplot_vegan.prcomp <- function(x, ...)
 
 
 ###############################################################################
-#' GGBiplot vegan default
+#' @describeIn ggbiplot_vegan Default method for creating biplots with vegan objects (rda, cca, capscale)
 #'
-#' Wrapper function around all geoms to construct a ggplot for vegan objects (rda, cca, capscale)
+#' This is the main workhorse function that constructs detailed biplots for vegan ordination objects.
+#' It provides extensive customization options for visualizing sites (observations), species (variables),
+#' environmental variables, centroids, and probability ellipses.
 #'
-#' @param x vegan object
-#' @param choices which 2 components schould be visualized
-#' @param scaling used scaling (1  = site, 2 = species (default)). If scaling = 2, than the angle of the species (variables) matches the correlation
-#' @param site_data descriptor data for the sites
-#' @param site_merge_by merge the site descriptor with the vegan object on .Rownumbers (cbind), .Rownames or any other column (merge this column with the site scores matrix rownames)
-#' @param species_data descriptor data for the species
-#' @param species_merge_by merge species data (see site_merge_by)
-#' @param site_geom which geom to represent the sites "blank", "point", "text"
-#' @param site_mapping ggplot mapping in the format aes() but x and y must not be given, so for example (aes(color = Kolom1, size = Kolom2, label = Kolom3)). This should always contain the label argument if the geom is "text"
-#' @param centroid_geom representation of the site centroids ("blank", "point", "text")
-#' @param centroid_mapping ggplot mapping for the centroids (see site_mapping)
-#' @param ellipse_geom representation of the site probability density ellipses ("blank", "line")
-#' @param ellipse_mapping ggplot mapping for the ellipses
-#' @param species_geom representation of the species (or biometric variables) ("blank", "text", "arrow", "point")
-#' @param species_mapping ggplot mapping for the species
-#' @param cor_circle_geom representation of the correlation circle ("blank", "line")
-#' @param cor_circle_mapping ggplot mapping for the correlation circle
-#' @param lc_geom representation of linear constraints (see site_geom)
-#' @param lc_mapping see site_mapping but for the linear constraints
-#' @param bp_geom representation of the continuous environmental variables ("blank", "arrow", "text", "point")
-#' @param bp_mapping mapping of the continuous environmental variables
-#' @param cn_geom representation of the discrete environmental variables
-#' @param cn_mapping mapping of the discrete environmental variables
-#' @param species_abbrev logical that controls if species names (or variables when not working with vegetation data) should be abbreviated
-#' @param species_adjust adjustment of the species labels so they do not collide with the arrows
-#' @param ellipse_level probability density on which the ellipses should be based. 0.68 or 0.95 are the most logical choices (1 or 2 sd from the centroids)
-#' @param base_colors vector of 3 elements with the base colors of sites, species and environmental variables
-#' @param base_shapes vector of 3 elements with the base shapes for sites, species and environmental variables
-#' @param base_sizes  vector of 3 elements  with the base sizes for sites, species and environmental variables
-#' @param legend_position position of the legend "top", "bottom", "left", "right", "none"
-#' @param ... other arguments for ggbiplot_vegan.default
+#' @param x A vegan ordination object (rda, cca, or capscale)
+#' @param choices Integer vector of length 2 specifying which ordination axes to plot (default: 1:2)
+#' @param scaling Integer (1 or 2) specifying the scaling to use:
+#'   \itemize{
+#'     \item 1 = site (distance) scaling - focuses on relationships among sites
+#'     \item 2 = species scaling (default) - focuses on relationships among species; 
+#'               with scaling=2, the angle between species vectors approximates their correlation
+#'   }
+#' @param site_data Optional data frame with descriptor variables for the sites (observations).
+#'   Should have the same number of rows as the ordination object has sites.
+#' @param site_merge_by Character string specifying how to merge site_data:
+#'   \itemize{
+#'     \item "row.names" (default) - merge by matching row names
+#'     \item "row.numbers" - merge by row position (cbind)
+#'     \item Any column name - merge by matching values in that column
+#'   }
+#' @param species_data Optional data frame with descriptor variables for the species (variables)
+#' @param species_merge_by Character string specifying how to merge species_data (see site_merge_by)
+#' @param site_geom Character string specifying how to display sites:
+#'   "blank" (hidden), "point" (default), or "text" (labels)
+#' @param site_mapping ggplot2 aesthetic mapping for sites (created with \code{aes()}).
+#'   Should NOT include x and y (automatically set). Can include color, size, shape, label, etc.
+#'   Must include label aesthetic if site_geom is "text".
+#' @param centroid_geom Character string for displaying site centroids:
+#'   "blank" (default, hidden), "point", or "text"
+#' @param centroid_mapping ggplot2 aesthetic mapping for centroids
+#' @param ellipse_geom Character string for probability density ellipses:
+#'   "blank" (default, hidden) or "line"
+#' @param ellipse_mapping ggplot2 aesthetic mapping for ellipses
+#' @param species_geom Character string for displaying species/variables:
+#'   "arrow" (default), "text", "point", or "blank"
+#' @param species_mapping ggplot2 aesthetic mapping for species
+#' @param cor_circle_geom Character string for correlation circle:
+#'   "blank" (default, hidden) or "line". The correlation circle is useful with scaling=2.
+#' @param cor_circle_mapping ggplot2 aesthetic mapping for correlation circle
+#' @param lc_geom Character string for linear constraints: "blank" (default), "point", or "text"
+#' @param lc_mapping ggplot2 aesthetic mapping for linear constraints
+#' @param bp_geom Character string for continuous environmental variables (biplot scores):
+#'   "blank" (default), "arrow", "text", or "point"
+#' @param bp_mapping ggplot2 aesthetic mapping for continuous environmental variables
+#' @param cn_geom Character string for discrete environmental variables (centroids):
+#'   "blank" (default), "point", or "text"
+#' @param cn_mapping ggplot2 aesthetic mapping for discrete environmental variables
+#' @param species_abbrev Logical; if TRUE, abbreviate species names (default: FALSE)
+#' @param species_adjust Numeric adjustment factor for species label positions to avoid
+#'   overlap with arrows (default: 1.1)
+#' @param ellipse_level Numeric probability level for ellipses (default: 0.68).
+#'   Common values are 0.68 (~1 SD) or 0.95 (~2 SD)
+#' @param base_colors Character vector of length 3 with base colors for
+#'   sites, species, and environmental variables (default: c("black", "red", "blue"))
+#' @param base_shapes Numeric vector of length 3 with base point shapes for
+#'   sites, species, and environmental variables (default: c(16, 16, 16))
+#' @param base_sizes Numeric vector of length 3 with base sizes for
+#'   sites, species, and environmental variables (default: c(2, 2, 2))
+#' @param legend_position Character string for legend position:
+#'   "right" (default), "top", "bottom", "left", or "none"
+#' @param ... Additional arguments (currently unused)
+#'
+#' @return A ggplot object that can be further customized with ggplot2 functions
 #'
 #' @export
 #' @method ggbiplot_vegan default
 #' @rdname  ggbiplot_vegan
+#'
+#' @examples
+#' \dontrun{
+#' library(vegan)
+#' data(varespec)
+#' data(varechem)
+#' 
+#' # Simple RDA
+#' vare.rda <- rda(varespec)
+#' ggbiplot_vegan(vare.rda)
+#' 
+#' # RDA with environmental variables and custom colors
+#' vare.rda2 <- rda(varespec ~ N + P + K, data = varechem)
+#' ggbiplot_vegan(vare.rda2, 
+#'                site_data = varechem,
+#'                site_mapping = aes(color = pH, label = Row.names),
+#'                bp_geom = "arrow")
+#' }
 #'
 ggbiplot_vegan.default <- function(
   x,

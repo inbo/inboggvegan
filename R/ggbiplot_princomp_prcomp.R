@@ -14,8 +14,9 @@ ggbiplot.princomp <-
     stop(gettextf("object '%s' has no scores", deparse(substitute(x))), 
           domain = NA)
   lam <- x$sdev[choices]
-  if (is.null(n <- x$n.obs)) 
-    n <- 1
+  # Use NROW(scores) instead of x$n.obs for consistency with prcomp
+  # This ensures the scaling is consistent between princomp and prcomp
+  n <- NROW(scores)
   lam <- lam * sqrt(n)
   if (scale < 0 || scale > 1) 
     warning("'scale' is outside [0, 1]")

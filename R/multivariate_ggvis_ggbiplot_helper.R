@@ -1,23 +1,74 @@
 
 ################################################################################
 
-#' Title
+#' Extract and prepare display data from ordination objects
 #'
-#' @param x object
-#' @param data descriptor dataset
-#' @param choices which axes (vector of length 2)
-#' @param display sites | species | lc | bp | cn
-#' @param scaling ??
-#' @param merge_by merge rownames of object scores with this column in the descriptor dataset
-#' @param species_abbrev should the species axes names be abbreviated
-#' @param species_adjust text adjustment to avoid overlap with arrows
-#' @param remove_row_prefix remove the default row prefix "Row"
-#' @param ... other arguments passed to the vegan::scores function
+#' This helper function extracts coordinate data (scores) from ordination objects
+#' and merges it with optional descriptor data for plotting. It handles different
+#' types of scores (sites, species, environmental variables, etc.) and prepares
+#' them for use in ggplot-based visualizations.
 #'
-#' @return
+#' @param x An ordination object (from vegan package: rda, cca, capscale, or similar)
+#' @param data Optional data frame with descriptor/metadata variables to be merged
+#'   with the ordination scores. Should have matching row identifiers.
+#' @param choices Integer vector of length 2 specifying which ordination axes to extract
+#'   (default: 1:2)
+#' @param display Character string specifying which type of scores to extract:
+#'   \itemize{
+#'     \item "sites" - sample/site scores (default)
+#'     \item "species" - species/variable scores
+#'     \item "lc" - linear constraints
+#'     \item "bp" - biplot scores for continuous environmental variables
+#'     \item "cn" - centroids for discrete environmental variables
+#'   }
+#' @param scaling Character string or numeric specifying the scaling method.
+#'   Common values are 1 (site scaling) or 2/"species" (species scaling).
+#'   See \code{vegan::scores()} for details.
+#' @param merge_by Character string specifying how to merge the descriptor data:
+#'   \itemize{
+#'     \item "row.numbers" - merge by row position (cbind)
+#'     \item "row.names" - merge by matching row names (default)
+#'     \item Any column name - merge by matching values in that column
+#'   }
+#' @param species_abbrev Logical; if TRUE, abbreviate species names in the output
+#'   (default: FALSE). Only applies when display = "species".
+#' @param species_adjust Numeric multiplier for adjusting species label positions
+#'   to avoid overlap with arrows (default: 1.1). Only applies when display = "species".
+#' @param remove_row_prefix Logical; if TRUE (default), remove "row" or "sit" prefix
+#'   from row names that are automatically added by some functions
+#' @param ... Additional arguments passed to \code{vegan::scores()}
+#'
+#' @return A data frame with ordination coordinates and merged descriptor data.
+#'   For species display, includes additional columns for label positioning (.angle, .hjust).
+#'   Returns NULL if no data is available for the requested display type.
+#'   The data frame has attributes:
+#'   \itemize{
+#'     \item axis.labels - formatted axis labels with explained variance (for sites)
+#'     \item r - radius of correlation circle (for species)
+#'   }
+#'
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' library(vegan)
+#' data(varespec)
+#' data(varechem)
+#' 
+#' vare.rda <- rda(varespec)
+#' 
+#' # Extract site scores
+#' site_scores <- get_display_data(vare.rda, display = "sites")
+#' 
+#' # Extract species scores with abbreviation
+#' species_scores <- get_display_data(vare.rda, display = "species", 
+#'                                     species_abbrev = TRUE)
+#' 
+#' # Extract site scores merged with environmental data
+#' site_data <- get_display_data(vare.rda, data = varechem, 
+#'                               display = "sites", merge_by = "row.names")
+#' }
+#'
 get_display_data <- function(x,
                              data = NULL,
                              choices = 1:2,
@@ -190,20 +241,44 @@ get_display_data <- function(x,
 
 #-------------------------------------------------------------------------------
 
-#' Title
+#' Select and configure geom layers for biplot elements
 #'
-#' @param mapping zie ggplot
-#' @param data zie ggplot
-#' @param geom welke geom wil je gebruiken: text | point | blank | line | path
-#' @param base_color basiskleur grafiek
-#' @param base_shape standaardsymbool
-#' @param base_size  standaard symboolgrootte
-#' @param ... andere parameters die gebruikt worden door ggplot geoms
+#' This helper function creates ggplot2 geom layers with appropriate aesthetics
+#' based on the specified geometry type and mappings. It handles conditional
+#' application of base colors, shapes, and sizes depending on whether these
+#' aesthetics are explicitly mapped.
 #'
-#' @return
+#' @param mapping ggplot2 aesthetic mapping created with \code{aes()}
+#' @param data Data frame to be plotted
+#' @param geom Character string specifying the geometry type:
+#'   "text", "point", "blank" (no display), "line", or "path"
+#' @param base_color Character string for the base color to use when color
+#'   is not mapped in the aesthetics
+#' @param base_shape Numeric value for the base point shape (pch code) to use
+#'   when shape is not mapped
+#' @param base_size Numeric value for the base size to use when size is not mapped
+#' @param ... Additional arguments passed to the ggplot2 geom function
+#'
+#' @return A ggplot2 layer (geom_*) or NULL if geom = "blank"
+#'
 #' @export
 #'
 #' @examples
+#' \dontrun{
+#' library(ggplot2)
+#' df <- data.frame(x = 1:10, y = 1:10, group = rep(c("A", "B"), 5))
+#' 
+#' # Point geom with base settings
+#' ggplot(df, aes(x = x, y = y)) +
+#'   geom_selector(aes(x = x, y = y), df, "point", 
+#'                 base_color = "red", base_shape = 16, base_size = 3)
+#' 
+#' # Text geom with mapped color
+#' ggplot(df, aes(x = x, y = y)) +
+#'   geom_selector(aes(x = x, y = y, color = group, label = group), df, "text",
+#'                 base_color = "blue", base_shape = 16, base_size = 4)
+#' }
+#'
 geom_selector <- function(mapping, data, geom, base_color, base_shape, base_size, ...){
   if (       geom == "text"){
     if        (is.null(mapping$colour) & is.null(mapping$size)){
