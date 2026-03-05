@@ -4,10 +4,9 @@ Extended biplot and screeplot functionality for the vegan package
 
 ## Installation instructions
 
-````
-ip <- rownames(installed.packages())
-if (!"remotes" %in% ip) {
-  install.packages("remotes")
+```
+if (!"devtools" %in% rownames(installed.packages())) {
+  install.packages("devtools")
 }
-remotes::install_github("inbo/inboggvegan") 
-````
+devtools::install_github("inbo/inboggvegan", dependencies = TRUE)
+```
