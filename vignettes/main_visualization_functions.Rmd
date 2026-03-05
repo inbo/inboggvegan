@@ -153,6 +153,78 @@ ggbiplot_vegan(dune.rda,
   ggtitle("RDA Biplot of Dune Meadow Vegetation")
 ```
 
+## Core Customization: Colors, Shapes, Sizes, and Labels
+
+The main strength of `ggbiplot_vegan()` is its flexibility in customizing visual 
+properties using ggplot2 aesthetics. This is where the package really improves 
+over base R plotting functions.
+
+### Customizing Site Points
+
+You can map grouping variables to different aesthetics:
+
+```{r custom_basics}
+# Map Management to colors and Use to shapes
+ggbiplot_vegan(dune.rda,
+               site_data = dune.env,
+               site_mapping = aes(color = Management, 
+                                 shape = Use,
+                                 label = Row.names),
+               species_abbrev = TRUE) +
+  ggtitle("Sites Colored by Management, Shaped by Use")
+```
+
+### Size Mapping for Continuous Variables
+
+Map continuous variables to point size:
+
+```{r custom_size}
+# Map A1 (soil thickness) to point size
+ggbiplot_vegan(dune.rda,
+               site_data = dune.env,
+               site_mapping = aes(color = Management, 
+                                 size = A1,
+                                 label = Row.names),
+               species_geom = "text",
+               species_abbrev = TRUE) +
+  scale_size_continuous(name = "A1 Horizon Thickness") +
+  ggtitle("Point Size Shows Soil Thickness")
+```
+
+### Custom Colors and Themes
+
+Combine with ggplot2 functions for complete control:
+
+```{r custom_colors}
+ggbiplot_vegan(dune.rda,
+               site_data = dune.env,
+               site_mapping = aes(color = Management, label = Row.names),
+               species_abbrev = TRUE) +
+  scale_color_manual(values = c("BF" = "darkblue", 
+                                 "HF" = "darkgreen", 
+                                 "NM" = "orange", 
+                                 "SF" = "darkred")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        panel.grid.minor = element_blank()) +
+  ggtitle("Custom Colors and Theme")
+```
+
+### Showing vs Hiding Labels
+
+Control which elements show labels:
+
+```{r custom_labels}
+# Sites as points (no labels), species as labels
+ggbiplot_vegan(dune.rda,
+               site_geom = "point",           # No labels on sites
+               site_data = dune.env,
+               site_mapping = aes(color = Management),
+               species_geom = "text",         # Show species labels
+               species_abbrev = TRUE) +
+  ggtitle("Species Labeled, Sites as Points Only")
+```
+
 ## Scaling Options
 
 The `scaling` parameter controls how sites and species are displayed:
@@ -183,10 +255,10 @@ ggbiplot_vegan(dune.rda,
                ellipse_geom = "line",                    # Add ellipses
                ellipse_mapping = aes(color = Management),
                ellipse_level = 0.95,                     # 95% confidence
-               centroid_geom = "point",                  # Add group centroids
-               centroid_mapping = aes(color = Management),
+               centroid_geom = "text",                   # Add group centroids as labels
+               centroid_mapping = aes(color = Management, label = Management),
                species_abbrev = TRUE) +
-  ggtitle("RDA with 95% Confidence Ellipses")
+  ggtitle("RDA with 95% Confidence Ellipses and Centroids")
 ```
 
 ## CCA Example
@@ -255,26 +327,18 @@ p2
 
 The visualizations should now show consistent scaling, making comparisons easier.
 
-# Advanced Customization
+# Summary
 
-Since all functions return ggplot objects, you can apply any ggplot2 customization:
+The `inboggvegan` package provides flexible ggplot2-based visualizations for 
+ordination analysis. Key features include:
 
-```{r advanced}
-ggbiplot_vegan(dune.rda,
-               site_data = dune.env,
-               site_mapping = aes(color = Management, 
-                                  shape = Use,
-                                  size = A1,
-                                  label = Row.names),
-               species_abbrev = TRUE,
-               base_colors = c("darkblue", "darkred", "darkgreen"),
-               legend_position = "bottom") +
-  theme_bw() +
-  theme(panel.grid.minor = element_blank()) +
-  scale_color_brewer(palette = "Set1") +
-  ggtitle("Highly Customized RDA Biplot") +
-  labs(caption = "Data: Dune meadow vegetation")
-```
+- **Easy customization**: Map grouping variables to colors, shapes, and sizes
+- **Multiple object types**: Works with prcomp, princomp, rda, cca, capscale
+- **Consistent scaling**: Fixed scaling between princomp and prcomp
+- **Full ggplot2 compatibility**: Add any ggplot2 layers for complete control
+
+For more details on function parameters, see the function documentation 
+(`?ggbiplot_vegan`, `?ggscreeplot`).
 
 # Helper Functions
 

@@ -176,16 +176,18 @@ test_that("ggbiplot_vegan works with correlation circle", {
 test_that("ggbiplot_vegan works with ellipses and centroids", {
   vare.rda <- rda(varespec)
   
-  # Create a grouping variable
+  # Create a grouping variable with matching rownames
   site_data <- data.frame(group = rep(c("A", "B"), length.out = nrow(varespec)))
+  rownames(site_data) <- rownames(varespec)
   
   p <- ggbiplot_vegan(vare.rda,
                       site_data = site_data,
                       site_mapping = aes(color = group, label = Row.names),
+                      site_merge_by = "row.names",
                       ellipse_geom = "line",
                       ellipse_mapping = aes(color = group),
-                      centroid_geom = "point",
-                      centroid_mapping = aes(color = group))
+                      centroid_geom = "text",  # Changed from "point" to "text" since stat_centroid requires label
+                      centroid_mapping = aes(color = group, label = group))
   expect_s3_class(p, "ggplot")
 })
 
