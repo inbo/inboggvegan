@@ -174,8 +174,8 @@ get_display_data <- function(x,
       #bp <- attr(bp, "const") * bp
       cn <- scores(x, display = "cn", scaling = scaling, choices=choices)
       if (!is.null(q)){
-        # Check if cn is not NULL and not all NA
-        if(!is.null(cn) && !all(is.na(cn))) {
+        # Check if cn is valid (not NULL, has rows, and not all NA)
+        if(!is.null(cn) && is.matrix(cn) && nrow(cn) > 0 && !all(is.na(cn))) {
           bipnam <- rownames(bp)
           cntnam <- rownames(cn)
           bp <- bp[!(bipnam %in% cntnam), , drop = FALSE]
