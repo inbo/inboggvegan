@@ -1,14 +1,14 @@
 Package: inboggvegan
 Type: Package
 Title: GGplot functions
-Version: 0.5.0
-Date: 2017-10-19
+Version: 0.6.0
+Date: 2025-03-05
 Author: Pieter Verschelde
 Maintainer: Pieter Verschelde <pieter.verschelde@inbo.be>
 Description: A work in development containing R functions for multivariate plots ...
 License: MIT License
 Depends: 
-    R (>= 3.5.0)
+    R (>= 4.2.0)
 Imports:
     stats,
     utils,
