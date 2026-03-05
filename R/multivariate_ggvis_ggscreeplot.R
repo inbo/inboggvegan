@@ -18,11 +18,51 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-#' Screeplot for Principal Components
+#' Create a screeplot for principal components and ordination analyses
 #'
-#' @param pcobj          an object returned by prcomp() or princomp()
-#' @param type           the type of scree plot.  'pev' corresponds proportion of explained variance, i.e. the eigenvalues divided by the trace. 'cev' corresponds to the cumulative proportion of explained variance, i.e. the partial sum of the first k eigenvalues divided by the trace.
+#' This function creates a ggplot-based screeplot showing the proportion of variance
+#' explained by each component/axis in a multivariate analysis. It works with both
+#' standard R PCA objects (prcomp, princomp) and vegan ordination objects (rda, cca, capscale).
+#'
+#' @param pcobj An ordination or PCA object. Can be one of:
+#'   \itemize{
+#'     \item prcomp - from \code{stats::prcomp()}
+#'     \item princomp - from \code{stats::princomp()}
+#'     \item rda, cca, capscale - from vegan package
+#'     \item lda - from MASS package
+#'   }
+#' @param type Character string or vector specifying the type of screeplot:
+#'   \itemize{
+#'     \item "pev" - Proportion of Explained Variance (eigenvalues divided by total variance)
+#'     \item "cev" - Cumulative Explained Variance (cumulative sum of proportions)
+#'     \item "both" - Both pev and cev on the same plot (default if not specified)
+#'   }
+#'
+#' @return A ggplot object showing the screeplot. The plot can be further customized
+#'   using standard ggplot2 functions.
+#'
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Example with prcomp
+#' pca <- prcomp(USArrests, scale. = TRUE)
+#' ggscreeplot(pca, type = "pev")
+#' ggscreeplot(pca, type = "cev")
+#' ggscreeplot(pca, type = "both")
+#' 
+#' # Customize the plot
+#' library(ggplot2)
+#' ggscreeplot(pca, type = "both") + 
+#'   ggtitle("Screeplot for USArrests PCA") +
+#'   theme_minimal()
+#' 
+#' # Example with vegan rda
+#' library(vegan)
+#' data(varespec)
+#' vare.rda <- rda(varespec)
+#' ggscreeplot(vare.rda, type = "both")
+#' }
 #'
 ggscreeplot <- function(pcobj, type = c('pev', 'cev' ,'both'))
 {

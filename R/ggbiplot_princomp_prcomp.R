@@ -14,8 +14,11 @@ ggbiplot.princomp <-
     stop(gettextf("object '%s' has no scores", deparse(substitute(x))), 
           domain = NA)
   lam <- x$sdev[choices]
-  if (is.null(n <- x$n.obs)) 
-    n <- 1
+  # Fix for princomp scaling inconsistency:
+  # - x$n.obs can be NULL (defaulting to 1) or may not match actual observation count
+  # - This caused different scaling than prcomp, which uses NROW(scores)
+  # - Using NROW(scores) ensures consistent biplot scaling between princomp and prcomp
+  n <- NROW(scores)
   lam <- lam * sqrt(n)
   if (scale < 0 || scale > 1) 
     warning("'scale' is outside [0, 1]")

@@ -1,0 +1,380 @@
+---
+title: "Main Visualization Functions in inboggvegan"
+author: "Pieter Verschelde"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Main Visualization Functions in inboggvegan}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+# Introduction
+
+The `inboggvegan` package provides ggplot2-based visualization functions for 
+multivariate analysis objects. While the vegan package offers excellent ordination 
+methods, its base R plotting functions can be limiting. This package bridges that 
+gap by providing modern, customizable ggplot2 visualizations.
+
+The two main visualization functions are:
+
+1. **`ggbiplot_vegan()`** - Creates biplots for ordination objects
+2. **`ggscreeplot()`** - Creates screeplots showing variance explained by components
+
+Both functions work with:
+- Vegan objects: rda, cca, capscale
+- Standard R PCA objects: prcomp, princomp
+
+## Load Required Packages
+
+```{r libraries}
+library(inboggvegan)
+library(vegan)
+library(ggplot2)
+```
+
+# Screeplot Visualizations with ggscreeplot()
+
+Screeplots show the proportion of variance explained by each component in a 
+multivariate analysis. This helps determine how many components to retain.
+
+## Example with prcomp
+
+Let's start with a simple PCA analysis using the built-in USArrests dataset:
+
+```{r scree_prcomp}
+# Perform PCA
+pca <- prcomp(USArrests, scale. = TRUE)
+
+# Three types of screeplots
+p1 <- ggscreeplot(pca, type = "pev")  # Proportion of variance
+p2 <- ggscreeplot(pca, type = "cev")  # Cumulative variance
+p3 <- ggscreeplot(pca, type = "both") # Both on same plot
+
+# Display the plots
+p1
+p2
+p3
+```
+
+## Customizing Screeplots
+
+Since the output is a ggplot object, you can customize it further:
+
+```{r scree_custom}
+ggscreeplot(pca, type = "both") +
+  ggtitle("Screeplot for USArrests PCA") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+
+## Example with Vegan Objects
+
+The function also works with vegan ordination objects:
+
+```{r scree_vegan}
+data(varespec)
+data(varechem)
+
+# RDA analysis
+vare.rda <- rda(varespec ~ N + P + K, data = varechem)
+
+# Screeplot showing constrained and unconstrained axes
+ggscreeplot(vare.rda, type = "both") +
+  ggtitle("Variance Explained in RDA")
+```
+
+# Biplot Visualizations with ggbiplot_vegan()
+
+Biplots simultaneously display observations (sites) and variables (species) 
+in ordination space, helping visualize relationships between them.
+
+## Simple PCA Biplot
+
+```{r biplot_simple}
+# Basic PCA biplot
+ggbiplot_vegan(pca)
+```
+
+## PCA with Custom Coloring
+
+```{r biplot_pca_color}
+# Create a grouping variable based on murder rates
+state_data <- data.frame(
+  group = ifelse(USArrests$Murder > median(USArrests$Murder), 
+                 "High Murder", "Low Murder")
+)
+
+# Biplot with colored groups
+ggbiplot_vegan(pca,
+               site_data = state_data,
+               site_mapping = aes(color = group, label = Row.names))
+```
+
+## Vegan RDA Biplot
+
+For vegan objects, we can visualize sites, species, and environmental variables:
+
+```{r biplot_rda}
+data(dune)
+data(dune.env)
+
+# RDA with environmental variables
+dune.rda <- rda(dune ~ A1 + Management, data = dune.env)
+
+# Basic biplot with default settings
+ggbiplot_vegan(dune.rda)
+```
+
+## Customized RDA Biplot
+
+```{r biplot_rda_custom}
+# More detailed biplot showing environmental variables
+ggbiplot_vegan(dune.rda,
+               site_geom = "point",           # Sites as points
+               site_data = dune.env,
+               site_mapping = aes(color = Management, label = Row.names),
+               species_geom = "text",         # Species as text labels
+               species_abbrev = TRUE,         # Abbreviate species names
+               bp_geom = "arrow",            # Show environmental variables as arrows
+               cn_geom = "text") +           # Show factor centroids as text
+  theme_minimal() +
+  ggtitle("RDA Biplot of Dune Meadow Vegetation")
+```
+
+## Core Customization: Colors, Shapes, Sizes, and Labels
+
+The main strength of `ggbiplot_vegan()` is its flexibility in customizing visual 
+properties using ggplot2 aesthetics. This is where the package really improves 
+over base R plotting functions.
+
+### Customizing Site Points
+
+You can map grouping variables to different aesthetics:
+
+```{r custom_basics}
+# Map Management to colors and Use to shapes
+ggbiplot_vegan(dune.rda,
+               site_data = dune.env,
+               site_mapping = aes(color = Management, 
+                                 shape = Use,
+                                 label = Row.names),
+               species_abbrev = TRUE) +
+  ggtitle("Sites Colored by Management, Shaped by Use")
+```
+
+### Size Mapping for Continuous Variables
+
+Map continuous variables to point size:
+
+```{r custom_size}
+# Map A1 (soil thickness) to point size
+ggbiplot_vegan(dune.rda,
+               site_data = dune.env,
+               site_mapping = aes(color = Management, 
+                                 size = A1,
+                                 label = Row.names),
+               species_geom = "text",
+               species_abbrev = TRUE) +
+  scale_size_continuous(name = "A1 Horizon Thickness") +
+  ggtitle("Point Size Shows Soil Thickness")
+```
+
+### Custom Colors and Themes
+
+Combine with ggplot2 functions for complete control:
+
+```{r custom_colors}
+ggbiplot_vegan(dune.rda,
+               site_data = dune.env,
+               site_mapping = aes(color = Management, label = Row.names),
+               species_abbrev = TRUE) +
+  scale_color_manual(values = c("BF" = "darkblue", 
+                                 "HF" = "darkgreen", 
+                                 "NM" = "orange", 
+                                 "SF" = "darkred")) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        panel.grid.minor = element_blank()) +
+  ggtitle("Custom Colors and Theme")
+```
+
+### Showing vs Hiding Labels
+
+Control which elements show labels:
+
+```{r custom_labels}
+# Sites as points (no labels), species as labels
+ggbiplot_vegan(dune.rda,
+               site_geom = "point",           # No labels on sites
+               site_data = dune.env,
+               site_mapping = aes(color = Management),
+               species_geom = "text",         # Show species labels
+               species_abbrev = TRUE) +
+  ggtitle("Species Labeled, Sites as Points Only")
+```
+
+## Scaling Options
+
+The `scaling` parameter controls how sites and species are displayed:
+
+- **scaling = 1** (distance scaling): Focuses on relationships among sites
+- **scaling = 2** (correlation scaling): Focuses on relationships among species; 
+  angles between species vectors approximate correlations
+
+```{r scaling}
+# Scaling = 1: Distance biplot (focus on sites)
+p1 <- ggbiplot_vegan(dune.rda, scaling = 1) +
+  ggtitle("Scaling = 1 (Distance)")
+
+# Scaling = 2: Correlation biplot (focus on species)
+p2 <- ggbiplot_vegan(dune.rda, scaling = 2) +
+  ggtitle("Scaling = 2 (Correlation)")
+
+p1
+p2
+```
+
+## Adding Confidence Ellipses and Centroids
+
+```{r ellipses}
+ggbiplot_vegan(dune.rda,
+               site_data = dune.env,
+               site_mapping = aes(color = Management, label = Row.names),
+               ellipse_geom = "line",                    # Add ellipses
+               ellipse_mapping = aes(color = Management),
+               ellipse_level = 0.95,                     # 95% confidence
+               centroid_geom = "text",                   # Add group centroids as labels
+               centroid_mapping = aes(color = Management, label = Management),
+               species_abbrev = TRUE) +
+  ggtitle("RDA with 95% Confidence Ellipses and Centroids")
+```
+
+## CCA Example
+
+Canonical Correspondence Analysis (CCA) works similarly:
+
+```{r cca}
+# CCA with environmental variables
+dune.cca <- cca(dune ~ A1 + Moisture + Management, data = dune.env)
+
+ggbiplot_vegan(dune.cca,
+               site_data = dune.env,
+               site_mapping = aes(color = Management, label = Row.names),
+               species_geom = "text",
+               species_abbrev = TRUE,
+               bp_geom = "arrow") +
+  theme_minimal() +
+  ggtitle("CCA of Dune Meadow Vegetation")
+```
+
+## Correlation Circle
+
+When using scaling = 2, you can add a correlation circle. Species with 
+endpoints on or near this circle are well represented by the displayed axes 
+(have high communality for these axes):
+
+```{r cor_circle}
+ggbiplot_vegan(dune.rda,
+               scaling = 2,
+               species_abbrev = TRUE,
+               cor_circle_geom = "line") +  # Add correlation circle
+  ggtitle("RDA with Correlation Circle")
+```
+
+## Choosing Different Axes
+
+By default, axes 1 and 2 are displayed. If the ordination object has at least 
+three axes, you can plot different axis combinations:
+
+```{r different_axes}
+# If there are enough axes, you can plot different combinations
+# For example, axes 1 and 3
+ggbiplot_vegan(dune.rda, 
+               choices = c(1, 3),
+               species_abbrev = TRUE) +
+  ggtitle("RDA Axes 1 and 3")
+```
+
+## Comparison: princomp vs prcomp
+
+Both princomp and prcomp perform PCA, but use different algorithms. 
+The package now ensures consistent scaling between them:
+
+```{r princomp_vs_prcomp}
+# Using princomp
+pca_princomp <- princomp(USArrests, cor = TRUE)
+p1 <- ggbiplot_vegan(pca_princomp) + ggtitle("princomp")
+
+# Using prcomp
+pca_prcomp <- prcomp(USArrests, scale. = TRUE)
+p2 <- ggbiplot_vegan(pca_prcomp) + ggtitle("prcomp")
+
+p1
+p2
+```
+
+The visualizations should now show consistent scaling, making comparisons easier.
+
+# Summary
+
+The `inboggvegan` package provides flexible ggplot2-based visualizations for 
+ordination analysis. Key features include:
+
+- **Easy customization**: Map grouping variables to colors, shapes, and sizes
+- **Multiple object types**: Works with prcomp, princomp, rda, cca, capscale
+- **Consistent scaling**: Fixed scaling between princomp and prcomp
+- **Full ggplot2 compatibility**: Add any ggplot2 layers for complete control
+
+For more details on function parameters, see the function documentation 
+(`?ggbiplot_vegan`, `?ggscreeplot`).
+
+# Helper Functions
+
+The package also exports several helper functions for building custom plots:
+
+- `get_display_data()` - Extract and prepare data for plotting
+- `geom_arrow()` - Draw arrows for biplot vectors
+- `geom_arrowlabel()` - Add labels to arrows
+- `geom_corcircle()` - Add correlation circle
+- `stat_centroid()` - Calculate and display group centroids
+- `geom_selector()` - Flexible geom selection
+
+These can be used to create completely custom visualizations if needed.
+
+# Summary
+
+The `inboggvegan` package provides two main visualization functions:
+
+1. **`ggscreeplot()`** - Visualize variance explained by components
+   - Works with prcomp, princomp, rda, cca, capscale (and lda from MASS package)
+   - Three types: "pev", "cev", "both"
+   - Fully customizable with ggplot2
+
+2. **`ggbiplot_vegan()`** - Create biplots for ordination objects
+   - Works with all vegan ordination objects and PCA objects
+   - Highly customizable display of sites, species, and environmental variables
+   - Multiple geometry options (points, text, arrows)
+   - Support for ellipses, centroids, and correlation circles
+   - Consistent scaling between princomp and prcomp
+
+Both functions return ggplot objects that can be further customized using 
+standard ggplot2 functions, providing maximum flexibility for publication-quality 
+visualizations.
+
+# Session Info
+
+```{r session}
+sessionInfo()
+```
