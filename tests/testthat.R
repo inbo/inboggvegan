@@ -1,4 +1,4 @@
 library(testthat)
-#library(inboggvegan)
+library(inboggvegan)
 
-#test_check("inboggvegan")
+test_check("inboggvegan")
