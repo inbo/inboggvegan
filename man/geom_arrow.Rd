@@ -2,21 +2,36 @@
 % Please edit documentation in R/multivariate_ggvis_ggbiplot_geoms.R
 \name{geom_arrow}
 \alias{geom_arrow}
-\title{Title}
+\title{Draw arrows for biplot vectors}
 \usage{
 geom_arrow(mapping, data, inherit.aes = FALSE, arrow_size = 0.5, ...)
 }
 \arguments{
-\item{mapping}{zie ggplot}
+\item{mapping}{\code{ggplot2} aesthetic mapping created with \code{aes()}.}
 
-\item{data}{The data to be displayed in this layer}
+\item{data}{Data frame containing the arrow endpoint coordinates.}
 
-\item{inherit.aes}{If FALSE, overrides the default aesthetics, rather than combining with them. For creating a biplot this should be FALSE.}
+\item{inherit.aes}{Logical; default \code{FALSE}.}
 
-\item{arrow_size}{size of the arrow heads}
+\item{arrow_size}{Numeric value specifying arrow head size in picas
+(default: \code{0.5}).}
 
-\item{...}{other arguments passed on to layer.}
+\item{...}{Additional arguments passed to \code{geom_segment()}.}
+}
+\value{
+A \code{ggplot2} segment layer with arrows.
 }
 \description{
-Title
+Creates arrow segments from the origin \verb{(0, 0)} to specified points,
+typically used to represent species loadings or environmental effects.
+}
+\examples{
+library(ggplot2)
+library(vegan)
+data(varespec)
+vare_rda <- rda(varespec)
+sp_df <- get_display_data(vare_rda, display = "species")
+ggplot() +
+  geom_arrow(aes(x = PC1, y = PC2), data = sp_df, color = "red") +
+  coord_equal()
 }

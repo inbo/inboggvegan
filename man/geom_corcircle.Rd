@@ -2,17 +2,29 @@
 % Please edit documentation in R/multivariate_ggvis_ggbiplot_geoms.R
 \name{geom_corcircle}
 \alias{geom_corcircle}
-\title{Title}
+\title{Add a correlation circle to a biplot}
 \usage{
-geom_corcircle(radius, resolution = 200, ...)
+geom_corcircle(radius = 1, resolution = 200L, ...)
 }
 \arguments{
-\item{radius}{numeric radius of the correlation circle.}
+\item{radius}{Numeric value specifying the radius of the circle.}
 
-\item{resolution}{how many points to use to draw the circle}
+\item{resolution}{Integer specifying the number of points to use for drawing
+the circle (default: \code{200}).}
 
-\item{...}{other arguments passed on to layer.}
+\item{...}{Additional arguments passed to \code{geom_path()}.}
+}
+\value{
+A \code{ggplot2} path layer representing the correlation circle.
 }
 \description{
-Title
+Draws a circle representing the correlation structure in a biplot.
+When \code{scaling = 2}, variables (species) with endpoints on or near this
+circle are well represented by the displayed axes.
+}
+\examples{
+library(ggplot2)
+ggplot() +
+  geom_corcircle(radius = 1, color = "red", linetype = "dashed") +
+  coord_equal()
 }

@@ -58,8 +58,8 @@ Let's start with a simple PCA analysis using the built-in USArrests dataset:
 pca <- prcomp(USArrests, scale. = TRUE)
 
 # Three types of screeplots
-p1 <- ggscreeplot(pca, type = "pev")  # Proportion of variance
-p2 <- ggscreeplot(pca, type = "cev")  # Cumulative variance
+p1 <- ggscreeplot(pca, type = "pev") # Proportion of variance
+p2 <- ggscreeplot(pca, type = "cev") # Cumulative variance
 p3 <- ggscreeplot(pca, type = "both") # Both on same plot
 
 # Display the plots
@@ -88,10 +88,10 @@ data(varespec)
 data(varechem)
 
 # RDA analysis
-vare.rda <- rda(varespec ~ N + P + K, data = varechem)
+vare_rda <- rda(varespec ~ N + P + K, data = varechem)
 
 # Screeplot showing constrained and unconstrained axes
-ggscreeplot(vare.rda, type = "both") +
+ggscreeplot(vare_rda, type = "both") +
   ggtitle("Variance Explained in RDA")
 ```
 
@@ -112,14 +112,16 @@ ggbiplot_vegan(pca)
 ```{r biplot_pca_color}
 # Create a grouping variable based on murder rates
 state_data <- data.frame(
-  group = ifelse(USArrests$Murder > median(USArrests$Murder), 
-                 "High Murder", "Low Murder")
+  group = ifelse(USArrests$Murder > median(USArrests$Murder),
+    "High Murder", "Low Murder"
+  )
 )
 
 # Biplot with colored groups
 ggbiplot_vegan(pca,
-               site_data = state_data,
-               site_mapping = aes(color = group, label = Row.names))
+  site_data = state_data,
+  site_mapping = aes(color = group, label = Row.names)
+)
 ```
 
 ## Vegan RDA Biplot
@@ -131,24 +133,25 @@ data(dune)
 data(dune.env)
 
 # RDA with environmental variables
-dune.rda <- rda(dune ~ A1 + Management, data = dune.env)
+dune_rda <- rda(dune ~ A1 + Management, data = dune.env)
 
 # Basic biplot with default settings
-ggbiplot_vegan(dune.rda)
+ggbiplot_vegan(dune_rda)
 ```
 
 ## Customized RDA Biplot
 
 ```{r biplot_rda_custom}
 # More detailed biplot showing environmental variables
-ggbiplot_vegan(dune.rda,
-               site_geom = "point",           # Sites as points
-               site_data = dune.env,
-               site_mapping = aes(color = Management, label = Row.names),
-               species_geom = "text",         # Species as text labels
-               species_abbrev = TRUE,         # Abbreviate species names
-               bp_geom = "arrow",            # Show environmental variables as arrows
-               cn_geom = "text") +           # Show factor centroids as text
+ggbiplot_vegan(dune_rda,
+  site_geom = "point", # Sites as points
+  site_data = dune.env,
+  site_mapping = aes(color = Management, label = Row.names),
+  species_geom = "text", # Species as text labels
+  species_abbrev = TRUE, # Abbreviate species names
+  bp_geom = "arrow", # Show environmental variables as arrows
+  cn_geom = "text"
+) + # Show factor centroids as text
   theme_minimal() +
   ggtitle("RDA Biplot of Dune Meadow Vegetation")
 ```
@@ -165,12 +168,15 @@ You can map grouping variables to different aesthetics:
 
 ```{r custom_basics}
 # Map Management to colors and Use to shapes
-ggbiplot_vegan(dune.rda,
-               site_data = dune.env,
-               site_mapping = aes(color = Management, 
-                                 shape = Use,
-                                 label = Row.names),
-               species_abbrev = TRUE) +
+ggbiplot_vegan(dune_rda,
+  site_data = dune.env,
+  site_mapping = aes(
+    color = Management,
+    shape = Use,
+    label = Row.names
+  ),
+  species_abbrev = TRUE
+) +
   ggtitle("Sites Colored by Management, Shaped by Use")
 ```
 
@@ -180,13 +186,16 @@ Map continuous variables to point size:
 
 ```{r custom_size}
 # Map A1 (soil thickness) to point size
-ggbiplot_vegan(dune.rda,
-               site_data = dune.env,
-               site_mapping = aes(color = Management, 
-                                 size = A1,
-                                 label = Row.names),
-               species_geom = "text",
-               species_abbrev = TRUE) +
+ggbiplot_vegan(dune_rda,
+  site_data = dune.env,
+  site_mapping = aes(
+    color = Management,
+    size = A1,
+    label = Row.names
+  ),
+  species_geom = "text",
+  species_abbrev = TRUE
+) +
   scale_size_continuous(name = "A1 Horizon Thickness") +
   ggtitle("Point Size Shows Soil Thickness")
 ```
@@ -196,17 +205,22 @@ ggbiplot_vegan(dune.rda,
 Combine with ggplot2 functions for complete control:
 
 ```{r custom_colors}
-ggbiplot_vegan(dune.rda,
-               site_data = dune.env,
-               site_mapping = aes(color = Management, label = Row.names),
-               species_abbrev = TRUE) +
-  scale_color_manual(values = c("BF" = "darkblue", 
-                                 "HF" = "darkgreen", 
-                                 "NM" = "orange", 
-                                 "SF" = "darkred")) +
+ggbiplot_vegan(dune_rda,
+  site_data = dune.env,
+  site_mapping = aes(color = Management, label = Row.names),
+  species_abbrev = TRUE
+) +
+  scale_color_manual(values = c(
+    "BF" = "darkblue",
+    "HF" = "darkgreen",
+    "NM" = "orange",
+    "SF" = "darkred"
+  )) +
   theme_bw() +
-  theme(legend.position = "bottom",
-        panel.grid.minor = element_blank()) +
+  theme(
+    legend.position = "bottom",
+    panel.grid.minor = element_blank()
+  ) +
   ggtitle("Custom Colors and Theme")
 ```
 
@@ -216,12 +230,13 @@ Control which elements show labels:
 
 ```{r custom_labels}
 # Sites as points (no labels), species as labels
-ggbiplot_vegan(dune.rda,
-               site_geom = "point",           # No labels on sites
-               site_data = dune.env,
-               site_mapping = aes(color = Management),
-               species_geom = "text",         # Show species labels
-               species_abbrev = TRUE) +
+ggbiplot_vegan(dune_rda,
+  site_geom = "point", # No labels on sites
+  site_data = dune.env,
+  site_mapping = aes(color = Management),
+  species_geom = "text", # Show species labels
+  species_abbrev = TRUE
+) +
   ggtitle("Species Labeled, Sites as Points Only")
 ```
 
@@ -235,11 +250,11 @@ The `scaling` parameter controls how sites and species are displayed:
 
 ```{r scaling}
 # Scaling = 1: Distance biplot (focus on sites)
-p1 <- ggbiplot_vegan(dune.rda, scaling = 1) +
+p1 <- ggbiplot_vegan(dune_rda, scaling = 1) +
   ggtitle("Scaling = 1 (Distance)")
 
 # Scaling = 2: Correlation biplot (focus on species)
-p2 <- ggbiplot_vegan(dune.rda, scaling = 2) +
+p2 <- ggbiplot_vegan(dune_rda, scaling = 2) +
   ggtitle("Scaling = 2 (Correlation)")
 
 p1
@@ -249,15 +264,16 @@ p2
 ## Adding Confidence Ellipses and Centroids
 
 ```{r ellipses}
-ggbiplot_vegan(dune.rda,
-               site_data = dune.env,
-               site_mapping = aes(color = Management, label = Row.names),
-               ellipse_geom = "line",                    # Add ellipses
-               ellipse_mapping = aes(color = Management),
-               ellipse_level = 0.95,                     # 95% confidence
-               centroid_geom = "text",                   # Add group centroids as labels
-               centroid_mapping = aes(color = Management, label = Management),
-               species_abbrev = TRUE) +
+ggbiplot_vegan(dune_rda,
+  site_data = dune.env,
+  site_mapping = aes(color = Management, label = Row.names),
+  ellipse_geom = "line", # Add ellipses
+  ellipse_mapping = aes(color = Management),
+  ellipse_level = 0.95, # 95% confidence
+  centroid_geom = "text", # Add group centroids as labels
+  centroid_mapping = aes(color = Management, label = Management),
+  species_abbrev = TRUE
+) +
   ggtitle("RDA with 95% Confidence Ellipses and Centroids")
 ```
 
@@ -267,14 +283,15 @@ Canonical Correspondence Analysis (CCA) works similarly:
 
 ```{r cca}
 # CCA with environmental variables
-dune.cca <- cca(dune ~ A1 + Moisture + Management, data = dune.env)
+dune_cca <- cca(dune ~ A1 + Moisture + Management, data = dune.env)
 
-ggbiplot_vegan(dune.cca,
-               site_data = dune.env,
-               site_mapping = aes(color = Management, label = Row.names),
-               species_geom = "text",
-               species_abbrev = TRUE,
-               bp_geom = "arrow") +
+ggbiplot_vegan(dune_cca,
+  site_data = dune.env,
+  site_mapping = aes(color = Management, label = Row.names),
+  species_geom = "text",
+  species_abbrev = TRUE,
+  bp_geom = "arrow"
+) +
   theme_minimal() +
   ggtitle("CCA of Dune Meadow Vegetation")
 ```
@@ -286,10 +303,11 @@ endpoints on or near this circle are well represented by the displayed axes
 (have high communality for these axes):
 
 ```{r cor_circle}
-ggbiplot_vegan(dune.rda,
-               scaling = 2,
-               species_abbrev = TRUE,
-               cor_circle_geom = "line") +  # Add correlation circle
+ggbiplot_vegan(dune_rda,
+  scaling = 2,
+  species_abbrev = TRUE,
+  cor_circle_geom = "line"
+) + # Add correlation circle
   ggtitle("RDA with Correlation Circle")
 ```
 
@@ -301,9 +319,10 @@ three axes, you can plot different axis combinations:
 ```{r different_axes}
 # If there are enough axes, you can plot different combinations
 # For example, axes 1 and 3
-ggbiplot_vegan(dune.rda, 
-               choices = c(1, 3),
-               species_abbrev = TRUE) +
+ggbiplot_vegan(dune_rda,
+  choices = c(1, 3),
+  species_abbrev = TRUE
+) +
   ggtitle("RDA Axes 1 and 3")
 ```
 

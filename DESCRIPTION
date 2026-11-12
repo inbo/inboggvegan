@@ -1,30 +1,35 @@
 Package: inboggvegan
 Type: Package
-Title: GGplot functions
-Version: 0.6.0
-Date: 2025-03-05
-Author: Pieter Verschelde
-Maintainer: Pieter Verschelde <pieter.verschelde@inbo.be>
-Description: A work in development containing R functions for multivariate plots ...
-License: MIT License
+Title: Extended Biplot and Screeplot Functionality for the 'vegan' Package
+Version: 0.7.0
+Date: 2026-11-12
+Authors@R: 
+    person("Pieter", "Verschelde", email = "pieter.verschelde@inbo.be",
+           role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-9199-421X"))
+Description: Provides 'ggplot2'-based ordination plots, biplots, screeplots,
+    surface contour plots, hull/spider diagrams, and environmental vector fits
+    for multivariate objects from 'vegan' (rda, cca, capscale, metaMDS, envfit)
+    and 'stats' (prcomp, princomp).
+License: MIT + file LICENSE
 Depends: 
     R (>= 4.2.0)
 Imports:
+    ggplot2 (>= 3.4.0),
+    grid,
+    rlang,
+    scales,
     stats,
     utils,
-    vegan,
-    dplyr,
-    plyr,
-    grid,
-    ggplot2,
-    scales,
-    car,
-    reshape2
+    vegan
 Suggests:
     knitr,
+    MASS,
     rmarkdown,
-    testthat
-Roxygen: list(wrap = FALSE)
-LazyData: TRUE
-RoxygenNote: 6.1.1
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

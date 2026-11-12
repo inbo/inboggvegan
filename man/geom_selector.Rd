@@ -2,25 +2,42 @@
 % Please edit documentation in R/multivariate_ggvis_ggbiplot_helper.R
 \name{geom_selector}
 \alias{geom_selector}
-\title{Title}
+\title{Select and configure geom layers for biplot elements}
 \usage{
 geom_selector(mapping, data, geom, base_color, base_shape, base_size, ...)
 }
 \arguments{
-\item{mapping}{zie ggplot}
+\item{mapping}{\code{ggplot2} aesthetic mapping created with \code{aes()}.}
 
-\item{data}{zie ggplot}
+\item{data}{Data frame to be plotted.}
 
-\item{geom}{welke geom wil je gebruiken: text | point | blank | line | path}
+\item{geom}{Character string: \code{"text"}, \code{"point"}, \code{"blank"}, \code{"line"},
+or \code{"path"}.}
 
-\item{base_color}{basiskleur grafiek}
+\item{base_color}{Base color when \code{colour} is not mapped.}
 
-\item{base_shape}{standaardsymbool}
+\item{base_shape}{Base point shape when \code{shape} is not mapped.}
 
-\item{base_size}{standaard symboolgrootte}
+\item{base_size}{Base size when \code{size} is not mapped.}
 
-\item{...}{andere parameters die gebruikt worden door ggplot geoms}
+\item{...}{Additional arguments passed to the underlying \verb{geom_*} function.}
+}
+\value{
+A \code{ggplot2} layer or \code{NULL} if \code{geom = "blank"}.
 }
 \description{
-Title
+Select and configure geom layers for biplot elements
+}
+\examples{
+library(ggplot2)
+df <- data.frame(x = 1:6, y = 1:6, grp = rep(c("A", "B"), 3))
+ggplot(df, aes(x = x, y = y)) +
+  geom_selector(
+    aes(x = x, y = y),
+    df,
+    "point",
+    base_color = "red",
+    base_shape = 16,
+    base_size = 3
+  )
 }

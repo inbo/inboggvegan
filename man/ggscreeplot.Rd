@@ -2,15 +2,47 @@
 % Please edit documentation in R/multivariate_ggvis_ggscreeplot.R
 \name{ggscreeplot}
 \alias{ggscreeplot}
-\title{Screeplot for Principal Components}
+\title{Create a screeplot for principal components and ordination analyses}
 \usage{
-ggscreeplot(pcobj, type = c("pev", "cev", "both"))
+ggscreeplot(
+  pcobj,
+  type = c("both", "pev", "cev"),
+  max_axes = NULL,
+  bstick = FALSE
+)
 }
 \arguments{
-\item{pcobj}{an object returned by prcomp() or princomp()}
+\item{pcobj}{An ordination or PCA object (\code{prcomp}, \code{princomp}, \code{rda},
+\code{cca}, \code{capscale}, or \code{lda}).}
 
-\item{type}{the type of scree plot.  'pev' corresponds proportion of explained variance, i.e. the eigenvalues divided by the trace. 'cev' corresponds to the cumulative proportion of explained variance, i.e. the partial sum of the first k eigenvalues divided by the trace.}
+\item{type}{Character string specifying the type of screeplot:
+\itemize{
+\item \code{"both"} (default): Both proportion and cumulative explained variance.
+\item \code{"pev"}: Proportion of Explained Variance.
+\item \code{"cev"}: Cumulative Explained Variance.
+}}
+
+\item{max_axes}{Optional integer limiting the maximum number of axes shown
+on the x-axis.}
+
+\item{bstick}{Logical; if \code{TRUE}, overlays the broken-stick distribution
+expectation using \code{vegan::bstick()} when supported.}
+}
+\value{
+A \code{ggplot} object showing the screeplot.
 }
 \description{
-Screeplot for Principal Components
+Creates a \code{ggplot2}-based screeplot showing the proportion of variance
+explained by each component/axis in a multivariate analysis. Supports
+standard R PCA objects (\code{prcomp}, \code{princomp}), \code{MASS::lda}, and \code{vegan}
+ordination objects (\code{rda}, \code{cca}, \code{capscale}).
+}
+\examples{
+pca <- prcomp(USArrests, scale. = TRUE)
+ggscreeplot(pca, type = "both")
+
+library(vegan)
+data(varespec)
+vare_rda <- rda(varespec)
+ggscreeplot(vare_rda, type = "pev", max_axes = 10, bstick = TRUE)
 }

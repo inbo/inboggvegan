@@ -2,29 +2,55 @@
 % Please edit documentation in R/multivariate_ggvis_ggbiplot_geoms.R
 \name{stat_centroid}
 \alias{stat_centroid}
-\title{Title}
+\title{Compute and display centroids for grouped data}
 \usage{
-stat_centroid(mapping = NULL, data = NULL, geom = "text",
-  position = "identity", na.rm = FALSE, show.legend = NA,
-  inherit.aes = TRUE, ...)
+stat_centroid(
+  mapping = NULL,
+  data = NULL,
+  geom = "text",
+  position = "identity",
+  na.rm = FALSE,
+  show.legend = NA,
+  inherit.aes = TRUE,
+  ...
+)
 }
 \arguments{
-\item{mapping}{typical mapping construct for ggplots. Typical in the form of "aes(x=, y=, color=, ...)"}
+\item{mapping}{\code{ggplot2} aesthetic mapping created with \code{aes()}.
+Required aesthetics: \code{x}, \code{y}, and \code{label} (or \code{group}).}
 
-\item{data}{data to plot}
+\item{data}{Data frame containing the data to plot.}
 
-\item{geom}{how to visualize the data. "point" for points, "text" for labels}
+\item{geom}{Character string specifying how to display centroids:
+\code{"text"} (default) for labels, or \code{"point"} for points.}
 
-\item{position}{Position adjustment, either as a string, or the result of a call to a position adjustment function. In these plots this will mostly be "identity"}
+\item{position}{Position adjustment (default: \code{"identity"}).}
 
-\item{na.rm}{If FALSE, the default, missing values are removed with a warning. If TRUE, missing values are silently removed.}
+\item{na.rm}{Logical; if \code{FALSE} (default), missing values are removed with
+a warning.}
 
-\item{show.legend}{logical. Should this layer be included in the legends? NA, the default, includes if any aesthetics are mapped. FALSE never includes, and TRUE always includes.}
+\item{show.legend}{Logical; should this layer be included in the legends?}
 
-\item{inherit.aes}{If FALSE, overrides the default aesthetics, rather than combining with them. For creating a biplot this should be FALSE.}
+\item{inherit.aes}{Logical; if \code{FALSE}, overrides the default aesthetics.}
 
-\item{...}{other arguments passed on to layer.}
+\item{...}{Additional arguments passed to \code{ggplot2::layer()}.}
+}
+\value{
+A \code{ggplot2} layer.
 }
 \description{
-Title
+Computes the centroid (mean x and y coordinates) for each group in the data
+and displays it as text or points.
+}
+\examples{
+library(ggplot2)
+library(vegan)
+data(varespec)
+vare_rda <- rda(varespec)
+site_data <- get_display_data(vare_rda, display = "sites")
+site_data$grp <- rep(c("A", "B"), length.out = nrow(site_data))
+
+ggplot(site_data, aes(x = PC1, y = PC2, color = grp)) +
+  geom_point() +
+  stat_centroid(aes(label = grp))
 }

@@ -20,33 +20,31 @@ data(dune)
 data(dune.env)
 data(dune.taxon)
 set.seed(222)
-dune.desc <-
-  data.frame(F1 = factor(sample(letters[1:5], size=nrow(dune.env), replace = TRUE)),
-             F2 = factor(sample(LETTERS[6:10], size=nrow(dune.env), replace = TRUE)))
+dune_desc <-
+  data.frame(
+    F1 = factor(sample(letters[1:5], size = nrow(dune.env), replace = TRUE)),
+    F2 = factor(sample(LETTERS[6:10], size = nrow(dune.env), replace = TRUE))
+  )
 str(dune)
 str(dune.env)
 str(dune.taxon)
 str(dune.desc)
 
-#Fictieve dataset met beschrijvende data voor de sites
-
-
-
+# Fictieve dataset met beschrijvende data voor de sites
 ```
 
 # rda analyse
 
 ```{r rda}
-# rda analyse: vegan::rda() 
+# rda analyse: vegan::rda()
 ############################
-dune.rda <- rda(dune ~ A1 + Management, data = dune.env) 
-dune.rda 
+dune_rda <- rda(dune ~ A1 + Management, data = dune.env)
+dune_rda
 # constrained rank = 4 = 1 + (4-1)
 # unconstrained rank = 15 (er zijn in feite 20
 # eigenwaarden, maar de laatste vijf eigenwaarden zijn 0)
-eigenvals(dune.rda) 
-head(summary(dune.rda),5)
-
+eigenvals(dune.rda)
+head(summary(dune.rda), 5)
 ```
 
 ##screeplot
@@ -67,8 +65,7 @@ Hier worden eerst de "constraints" getoond. Deze gebruikt 4 vrijheidsgraden (1 c
 p1 <- ggscreeplot(dune.rda, type = "pev")
 p2 <- ggscreeplot(dune.rda, type = "cev")
 p3 <- ggscreeplot(dune.rda, type = "both")
-gridExtra::grid.arrange(p1,p2,p3, ncol = 1)
-
+gridExtra::grid.arrange(p1, p2, p3, ncol = 1)
 ```
 
 ##Generiek biplot
@@ -94,7 +91,10 @@ Een iets uitgebreidere versie toont de sites als text, waarvoor de rijnamen van 
 
 
 ```{r nieuwe biplot}
-ggbiplot_vegan(dune.rda, site_geom = "text", species_geom = "text", bp_geom = "arrow", cn_geom = "text")
+ggbiplot_vegan(dune.rda, site_geom = "text",
+               species_geom = "text",
+               bp_geom = "arrow",
+               cn_geom = "text")
 ```
 
 
@@ -129,12 +129,19 @@ In de huidige versie van de ggbiplot_vegan versie worden enkel functies voorzien
 
 
 ```{r nieuwe biplot}
-
-site_data <- get_display_data(dune.rda, data = dune.desc, choices = 1:2, display="sites", scaling = 2, merge_by = "row.numbers")
-species_data <- get_display_data(dune.rda, dune.taxon, choices = 1:2, display = "species", scaling = 2, merge_by = "row.names")
-linear_constraints_sites<- get_display_data(dune.rda, choices = 1:2, display = "lc", scaling = "sites", merge_by = "row.numbers")
-environmental_vars <- get_display_data(dune.rda, choices = 1:2, display = "bp", scaling = 2)
-environmental_centroids <- get_display_data(dune.rda, choices = 1:2, display = "cn", scaling = 2)
+site_data <- get_display_data(dune_rda, data = dune_desc, choices = 1:2,
+                              display = "sites", scaling = 2,
+                              merge_by = "row.numbers")
+species_data <- get_display_data(dune.rda, dune.taxon, choices = 1:2,
+                                 display = "species", scaling = 2,
+                                 merge_by = "row.names")
+linear_constraints_sites <- get_display_data(dune.rda, choices = 1:2,
+                                             display = "lc", scaling = "sites",
+                                             merge_by = "row.numbers")
+environmental_vars <- get_display_data(dune.rda, choices = 1:2,
+                                       display = "bp", scaling = 2)
+environmental_centroids <- get_display_data(dune.rda, choices = 1:2,
+                                            display = "cn", scaling = 2)
 
 head(site_data)
 head(species_data)
@@ -143,8 +150,6 @@ head(environmental_vars)
 head(environmental_centroids)
 
 attributes(site_data)
-
-
 ```
 
 In bovenstaande code zie je dat de informatie uit de objecten geëxtraheerd is in een data.frame formaat en dat er enkele variabelen en attributen zijn toegevoegd die het plotten van de biplot gemakkelijker maken en zorgen dat de effectieve biplot functionaliteit geen interpretaties en berekeningen moet uitvoeren. 
@@ -161,20 +166,23 @@ De basislaag van de biplot zijn de sites, dit is de voorstelling van de observat
 
 
 ```{r siteplot}
-
-site_data <- get_display_data(dune.rda, dune.desc, choices = 1:2, display = "sites")
-p1 <- ggplot(data = site_data, mapping = aes(x = RDA1, y = RDA2)) + 
+site_data <- get_display_data(dune.rda, dune.desc, choices = 1:2,
+                              display = "sites")
+p1 <- ggplot(data = site_data, mapping = aes(x = RDA1, y = RDA2)) +
   geom_point()
-p2 <- ggplot(data = site_data, 
-             mapping = aes(x = RDA1, y = RDA2, label = Row.names, color = F2)) + 
+p2 <- ggplot(
+  data = site_data,
+  mapping = aes(x = RDA1, y = RDA2, label = Row.names, color = F2)
+) +
   geom_text()
 
 p3 <- ggbiplot_vegan(dune.rda, species_geom = "blank")
-p4 <- ggbiplot_vegan(dune.rda, site_data = dune.desc, site_merge_by = "row.names", site_geom = "text",
-                     site_mapping = aes(color = F2, label = Row.names), species_geom = "blank")
+p4 <- ggbiplot_vegan(dune.rda,
+  site_data = dune.desc, site_merge_by = "row.names", site_geom = "text",
+  site_mapping = aes(color = F2, label = Row.names), species_geom = "blank"
+)
 
-gridExtra:: grid.arrange(p1,p2,p3,p4)
-
+gridExtra::grid.arrange(p1, p2, p3, p4)
 ```
 
 ###Species
@@ -218,33 +226,49 @@ De resterende variabelen zijn typische variabelen die de wijze van plotten nog i
 
 
 ```{r standaard biplot}
-site_data <- get_display_data(dune.rda, data = dune.desc, choices = 1:2, display="sites", scaling = 2, merge_by = "row.numbers")
-species_data <- get_display_data(dune.rda, dune.taxon, choices = 1:2, display = "species", scaling = 2, merge_by = "row.names")
+site_data <- get_display_data(dune.rda, data = dune.desc, choices = 1:2,
+                              display = "sites", scaling = 2,
+                              merge_by = "row.numbers")
+species_data <- get_display_data(dune.rda, dune.taxon, choices = 1:2,
+                                 display = "species", scaling = 2,
+                                 merge_by = "row.names")
 
-p <- 
-  ggplot(data = site_data, mapping = aes(x = RDA1, y = RDA2)) + 
-  geom_text(mapping= aes(color = F1, label = Row.names)) +
-  geom_arrow(data=species_data, mapping = aes(x=RDA1, y=RDA2, color = Class)) + 
-  geom_arrowlabel(data=species_data, mapping = aes(x=RDA1, y=RDA2, color = Class, label = Row.names))
+p <-
+  ggplot(data = site_data, mapping = aes(x = RDA1, y = RDA2)) +
+  geom_text(mapping = aes(color = F1, label = Row.names)) +
+  geom_arrow(data = species_data, mapping = aes(x = RDA1, y = RDA2,
+                                                color = Class)) +
+  geom_arrowlabel(data = species_data,
+                  mapping = aes(x = RDA1, y = RDA2,
+                                color = Class, label = Row.names))
 print(p)
-
-p <- ggbiplot_vegan(dune.rda, 
-                    site_data = dune.desc, site_merge_by = "row.numbers", site_geom = "text", site_mapping = aes(color = F1, label = Row.names),
-                    species_data = dune.taxon, species_merge_by = "row.names", species_mapping = aes(color = Class, label = Row.names))
+#nolint start
+p <- ggbiplot_vegan(dune_rda,
+                    site_data = dune_desc,
+                    site_merge_by = "row.numbers",
+                    site_geom = "text",
+                    site_mapping = aes(color = F1, label = Row.names),
+                    species_data = dune.taxon,
+                    species_merge_by = "row.names",
+                    species_mapping = aes(color = Class, label = Row.names)
+)
+#nolint end
 ```
 
 
 ### Omgevingsvariabelen
 
 ```{r environment}
-p <- ggbiplot_vegan(dune.rda, 
-                    site_data = dune.desc, site_merge_by = "row.numbers", site_geom = "text", site_mapping = aes(color = F1, label = Row.names),
-                    species_data = dune.taxon, species_merge_by = "row.names", 
-                    species_geom = "text", species_mapping = aes(color = Class, label = Row.names),
-                    bp_geom = "arrow", cn_geom = "text",
-                    base_sizes = c(3,2,4))
+p <- ggbiplot_vegan(dune.rda,
+  site_data = dune.desc, site_merge_by = "row.numbers",
+  site_geom = "text", site_mapping = aes(color = F1, label = Row.names),
+  species_data = dune.taxon, species_merge_by = "row.names",
+  species_geom = "text",
+  species_mapping = aes(color = Class, label = Row.names),
+  bp_geom = "arrow", cn_geom = "text",
+  base_sizes = c(3, 2, 4)
+)
 print(p)
-
 ```
 
 
@@ -270,52 +294,71 @@ set.seed(225)
 data(dune)
 data(dune.taxon)
 data(dune.env)
-dune.desc <- dune.env[c("Moisture", "Use", "Manure")]
-dune.envmodel <- dune.env[c("A1", "Management")]
+dune_desc <- dune.env[c("Moisture", "Use", "Manure")]
+dune_envmodel <- dune.env[c("A1", "Management")]
 
-dune.rda <- rda(dune ~ A1 + Management, data = dune.envmodel) 
-dune.rda 
+dune_rda <- rda(dune ~ A1 + Management, data = dune.envmodel)
+dune_rda
 
-site_data <- get_display_data(dune.rda, data = dune.desc, choices = 1:2, display="sites", scaling = 2, merge_by = "row.numbers")
-species_data <- get_display_data(dune.rda, dune.taxon, choices = 1:2, display = "species", scaling = 2, merge_by = "row.names")
-linear_constraints_sites<- get_display_data(dune.rda, choices = 1:2, display = "lc", scaling = "sites", merge_by = "row.numbers")
-environmental_vars <- get_display_data(dune.rda, choices = 1:2, display = "bp", scaling = 2)
-environmental_centroids <- get_display_data(dune.rda, choices = 1:2, display = "cn", scaling = 2)
+site_data <- get_display_data(dune.rda, data = dune.desc, choices = 1:2,
+                              display = "sites", scaling = 2,
+                              merge_by = "row.numbers")
+species_data <- get_display_data(dune.rda, dune.taxon, choices = 1:2,
+                                 display = "species", scaling = 2,
+                                 merge_by = "row.names")
+linear_constraints_sites <- get_display_data(dune.rda, choices = 1:2,
+                                             display = "lc",
+                                             scaling = "sites",
+                                             merge_by = "row.numbers")
+environmental_vars <- get_display_data(dune.rda, choices = 1:2,
+                                       display = "bp", scaling = 2)
+environmental_centroids <- get_display_data(dune.rda, choices = 1:2,
+                                            display = "cn", scaling = 2)
 
-p <- 
+p <-
   ggplot(site_data, mapping = aes(x = RDA1, y = RDA2)) +
-  geom_point(mapping = aes(color = Use, shape = factor(Moisture))) + 
+  geom_point(mapping = aes(color = Use, shape = factor(Moisture))) +
   stat_centroid(mapping = aes(color = Use, label = Use)) +
   stat_ellipse(mapping = aes(color = factor(Manure)), level = 0.68) +
-  geom_arrow(data = species_data, mapping = aes(x=RDA1, y=RDA2, color = Class)) + 
-  geom_arrowlabel(data = species_data, mapping = aes(x=RDA1, y=RDA2, color = Class, label = Row.names)) +
-  geom_corcircle(radius = attr(species_data, "r")) + 
-  geom_point(linear_constraints_sites, mapping = aes(x =RDA1, y = RDA2), alpha = 0.5, color = "darkgreen") +
-  geom_arrow(data = environmental_vars, mapping = aes(x=RDA1,y=RDA2), color = "blue") +
-  geom_arrowlabel(data = environmental_vars, mapping = aes(x=RDA1,y=RDA2), color = "blue") +
-  geom_text(data = environmental_centroids, mapping = aes(x=RDA1, y=RDA2, label = .level), color = "blue") +
-  coord_cartesian(xlim=c(-3,3), ylim=c(-3,3))
+  geom_arrow(data = species_data,
+             mapping = aes(x = RDA1, y = RDA2, color = Class)) +
+  geom_arrowlabel(data = species_data,
+                  mapping = aes(x = RDA1, y = RDA2,
+                                color = Class, label = Row.names)) +
+  geom_corcircle(radius = attr(species_data, "r")) +
+  geom_point(linear_constraints_sites,
+             mapping = aes(x = RDA1, y = RDA2),
+             alpha = 0.5, color = "darkgreen") +
+  geom_arrow(data = environmental_vars,
+             mapping = aes(x = RDA1, y = RDA2), color = "blue") +
+  geom_arrowlabel(data = environmental_vars,
+                  mapping = aes(x = RDA1, y = RDA2), color = "blue") +
+  geom_text(data = environmental_centroids,
+            mapping = aes(x = RDA1, y = RDA2, label = .level), color = "blue") +
+  coord_cartesian(xlim = c(-3, 3), ylim = c(-3, 3))
 print(p)
-
 ```
 
 
 ```{r alleswrapper}
-p <- 
-  ggbiplot_vegan(dune.rda, choices = 1:2, scaling = 2,
-                 site_data = dune.desc, site_merge_by = "row.numbers",
-                 site_geom = "point", site_mapping = aes(color = Use, shape = factor(Moisture)),
-                 centroid_geom = "text", centroid_mapping = aes(group = Use, color = Use, label = Use),#centroid werkt nog niet 100%
-                 ellipse_geom = "line", ellipse_mapping = aes(color = factor(Manure)),
-                 species_data = dune.taxon, species_merge_by = "row.names",
-                 species_geom = "arrow", species_mapping = aes(color = Class, label = Row.names),
-                 cor_circle_geom = "line",
-                 lc_geom = "point",
-                 bp_geom = "arrow",
-                 cn_geom = "text",
-                 base_sizes = c(2,2,3)) +
-    coord_cartesian(xlim=c(-3,3), ylim=c(-3,3))
+p <-
+  ggbiplot_vegan(dune.rda,
+    choices = 1:2, scaling = 2,
+    site_data = dune.desc, site_merge_by = "row.numbers",
+    site_geom = "point",
+    site_mapping = aes(color = Use, shape = factor(Moisture)),
+    centroid_geom = "text",
+    centroid_mapping = aes(group = Use, color = Use, label = Use),
+    ellipse_geom = "line", ellipse_mapping = aes(color = factor(Manure)),
+    species_data = dune.taxon, species_merge_by = "row.names",
+    species_geom = "arrow",
+    species_mapping = aes(color = Class, label = Row.names),
+    cor_circle_geom = "line",
+    lc_geom = "point",
+    bp_geom = "arrow",
+    cn_geom = "text",
+    base_sizes = c(2, 2, 3)
+  ) +
+  coord_cartesian(xlim = c(-3, 3), ylim = c(-3, 3))
 print(p)
-
-
 ```
