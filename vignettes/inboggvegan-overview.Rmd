@@ -50,7 +50,7 @@ When working with ecological community matrices containing many species axes, us
 
 ```{r scree-vegan}
 data(varespec)
- data(varechem)
+data(varechem)
 
 vare_pca <- rda(varespec, scale = TRUE)
 ggscreeplot(vare_pca, type = "pev", max_axes = 10, bstick = TRUE) +
@@ -171,8 +171,11 @@ axis_labs <- attr(site_df, "axis.labels")
 
 ggplot(site_df, aes(x = PC1, y = PC2)) +
   geom_corcircle(radius = circle_r, linetype = "dashed", color = "grey50") +
-  geom_arrow(aes(x = PC1, y = PC2), data = species_df, color = "firebrick", alpha = 0.6) +
-  geom_arrowlabel(aes(x = PC1, y = PC2, label = Row.names), data = species_df, color = "firebrick", size = 3) +
+  geom_arrow(aes(x = PC1, y = PC2),
+             data = species_df,
+             color = "firebrick", alpha = 0.6) +
+  geom_arrowlabel(aes(x = PC1, y = PC2, label = Row.names),
+                  data = species_df, color = "firebrick", size = 3) +
   geom_point(aes(size = Humdepth, color = Baresoil)) +
   scale_color_viridis_c() +
   coord_equal() +

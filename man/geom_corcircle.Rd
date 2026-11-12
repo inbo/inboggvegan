@@ -4,13 +4,13 @@
 \alias{geom_corcircle}
 \title{Add a correlation circle to a biplot}
 \usage{
-geom_corcircle(radius = 1, resolution = 200, ...)
+geom_corcircle(radius = 1, resolution = 200L, ...)
 }
 \arguments{
 \item{radius}{Numeric value specifying the radius of the circle.}
 
 \item{resolution}{Integer specifying the number of points to use for drawing
-the circle (default: 200).}
+the circle (default: \code{200}).}
 
 \item{...}{Additional arguments passed to \code{geom_path()}.}
 }
@@ -18,5 +18,13 @@ the circle (default: 200).}
 A \code{ggplot2} path layer representing the correlation circle.
 }
 \description{
-Add a correlation circle to a biplot
+Draws a circle representing the correlation structure in a biplot.
+When \code{scaling = 2}, variables (species) with endpoints on or near this
+circle are well represented by the displayed axes.
+}
+\examples{
+library(ggplot2)
+ggplot() +
+  geom_corcircle(radius = 1, color = "red", linetype = "dashed") +
+  coord_equal()
 }

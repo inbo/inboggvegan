@@ -11,7 +11,8 @@ geom_selector(mapping, data, geom, base_color, base_shape, base_size, ...)
 
 \item{data}{Data frame to be plotted.}
 
-\item{geom}{Character string: \code{"text"}, \code{"point"}, \code{"blank"}, \code{"line"}, or \code{"path"}.}
+\item{geom}{Character string: \code{"text"}, \code{"point"}, \code{"blank"}, \code{"line"},
+or \code{"path"}.}
 
 \item{base_color}{Base color when \code{colour} is not mapped.}
 
@@ -26,4 +27,17 @@ A \code{ggplot2} layer or \code{NULL} if \code{geom = "blank"}.
 }
 \description{
 Select and configure geom layers for biplot elements
+}
+\examples{
+library(ggplot2)
+df <- data.frame(x = 1:6, y = 1:6, grp = rep(c("A", "B"), 3))
+ggplot(df, aes(x = x, y = y)) +
+  geom_selector(
+    aes(x = x, y = y),
+    df,
+    "point",
+    base_color = "red",
+    base_shape = 16,
+    base_size = 3
+  )
 }

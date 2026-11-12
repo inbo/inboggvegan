@@ -7,10 +7,10 @@
 ggenvfit(
   x,
   env,
-  choices = 1:2,
+  choices = c(1L, 2L),
   scaling = "symmetric",
   p.max = 0.05,
-  permutations = 999,
+  permutations = 999L,
   arrow_color = "blue"
 )
 }
@@ -19,15 +19,19 @@ ggenvfit(
 
 \item{env}{A \code{data.frame} of environmental variables to fit.}
 
-\item{choices}{Integer vector of length 2 specifying axes (default: \code{1:2}).}
+\item{choices}{Integer vector of length 2 specifying axes.}
 
-\item{scaling}{Scaling method passed to \code{vegan::scores()} and \code{vegan::envfit()}.}
+\item{scaling}{Scaling method passed to \code{vegan::scores()} and
+\code{vegan::envfit()}.}
 
-\item{p.max}{Numeric p-value threshold for filtering vectors/factors (default: \code{0.05}).}
+\item{p.max}{Numeric p-value threshold for filtering vectors/factors
+(default: \code{0.05}).}
 
-\item{permutations}{Number of permutations for significance testing (default: \code{999}).}
+\item{permutations}{Number of permutations for significance testing
+(default: \code{999}).}
 
-\item{arrow_color}{Color for environmental arrows and centroids (default: \code{"blue"}).}
+\item{arrow_color}{Color for environmental arrows and centroids
+(default: \code{"blue"}).}
 }
 \value{
 A \code{ggplot} object.

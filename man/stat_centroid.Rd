@@ -26,7 +26,8 @@ Required aesthetics: \code{x}, \code{y}, and \code{label} (or \code{group}).}
 
 \item{position}{Position adjustment (default: \code{"identity"}).}
 
-\item{na.rm}{Logical; if \code{FALSE} (default), missing values are removed with a warning.}
+\item{na.rm}{Logical; if \code{FALSE} (default), missing values are removed with
+a warning.}
 
 \item{show.legend}{Logical; should this layer be included in the legends?}
 
@@ -40,4 +41,16 @@ A \code{ggplot2} layer.
 \description{
 Computes the centroid (mean x and y coordinates) for each group in the data
 and displays it as text or points.
+}
+\examples{
+library(ggplot2)
+library(vegan)
+data(varespec)
+vare_rda <- rda(varespec)
+site_data <- get_display_data(vare_rda, display = "sites")
+site_data$grp <- rep(c("A", "B"), length.out = nrow(site_data))
+
+ggplot(site_data, aes(x = PC1, y = PC2, color = grp)) +
+  geom_point() +
+  stat_centroid(aes(label = grp))
 }

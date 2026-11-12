@@ -8,9 +8,9 @@ ggordisurf(
   x,
   env_var,
   site_data = NULL,
-  choices = 1:2,
+  choices = c(1L, 2L),
   scaling = "symmetric",
-  knots = 10,
+  knots = 10L,
   ...
 )
 }
@@ -22,9 +22,10 @@ in \code{site_data}).}
 
 \item{site_data}{Optional \code{data.frame} containing \code{env_var}.}
 
-\item{choices}{Integer vector of length 2 specifying ordination axes (default: \code{1:2}).}
+\item{choices}{Integer vector of length 2 specifying ordination axes.}
 
-\item{scaling}{Scaling passed to \code{vegan::ordisurf()} (default: \code{"symmetric"}).}
+\item{scaling}{Scaling passed to \code{vegan::ordisurf()}
+(default: \code{"symmetric"}).}
 
 \item{knots}{Number of knots for the GAM smooth (default: \code{10}).}
 
@@ -34,9 +35,9 @@ in \code{site_data}).}
 A \code{ggplot} object with site points and smooth contour lines.
 }
 \description{
-A \code{ggplot2} wrapper around \code{vegan::ordisurf()} that fits a GAM smooth surface
-for a continuous environmental variable and displays contour lines over the
-ordination site scores.
+A \code{ggplot2} wrapper around \code{vegan::ordisurf()} that fits a GAM smooth
+surface for a continuous environmental variable and displays contour lines
+over the ordination site scores.
 }
 \examples{
 library(vegan)

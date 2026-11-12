@@ -24,7 +24,7 @@ ggbiplot_vegan(x, ...)
 
 \method{ggbiplot_vegan}{default}(
   x,
-  choices = 1:2,
+  choices = c(1L, 2L),
   scaling = 2,
   site_data = NULL,
   site_merge_by = "row.names",
@@ -33,7 +33,7 @@ ggbiplot_vegan(x, ...)
   site_geom = "point",
   site_mapping = aes(label = .data$Row.names),
   centroid_geom = "blank",
-  centroid_mapping = aes(group = 1),
+  centroid_mapping = aes(group = 1L),
   ellipse_geom = "blank",
   ellipse_mapping = NULL,
   species_geom = "arrow",
@@ -57,19 +57,22 @@ ggbiplot_vegan(x, ...)
 )
 }
 \arguments{
-\item{x}{An ordination object (\code{rda}, \code{cca}, \code{capscale}, \code{prcomp}, or \code{princomp}).}
+\item{x}{An ordination object (\code{rda}, \code{cca}, \code{capscale}, \code{prcomp}, or
+\code{princomp}).}
 
 \item{...}{Additional arguments passed to specific methods.}
 
-\item{choices}{Integer vector of length 2 specifying which ordination axes to plot.}
+\item{choices}{Integer vector of length 2 specifying which axes to plot.}
 
-\item{scaling}{Integer (\code{1} or \code{2}) or character specifying the scaling to use.}
+\item{scaling}{Integer (\code{1} or \code{2}) or character specifying the scaling.}
 
 \item{site_data}{Optional data frame with descriptor variables for sites.}
 
-\item{site_merge_by}{How to merge \code{site_data}: \code{"row.names"}, \code{"row.numbers"}, or column name.}
+\item{site_merge_by}{How to merge \code{site_data}: \code{"row.names"},
+\code{"row.numbers"}, or column name.}
 
-\item{species_data}{Optional data frame with descriptor variables for species.}
+\item{species_data}{Optional data frame with descriptor variables for
+species.}
 
 \item{species_merge_by}{How to merge \code{species_data}.}
 
@@ -99,25 +102,33 @@ ggbiplot_vegan(x, ...)
 
 \item{bp_geom}{\code{"blank"} (default), \code{"arrow"}, \code{"text"}, or \code{"point"}.}
 
-\item{bp_mapping}{\code{ggplot2} aesthetic mapping for continuous environmental variables.}
+\item{bp_mapping}{\code{ggplot2} aesthetic mapping for continuous environmental
+variables.}
 
 \item{cn_geom}{\code{"blank"} (default), \code{"point"}, or \code{"text"}.}
 
-\item{cn_mapping}{\code{ggplot2} aesthetic mapping for discrete environmental variables.}
+\item{cn_mapping}{\code{ggplot2} aesthetic mapping for discrete environmental
+variables.}
 
 \item{species_abbrev}{Logical; abbreviate species names (default: \code{FALSE}).}
 
-\item{species_adjust}{Numeric adjustment factor for species labels (default: \code{1.1}).}
+\item{species_adjust}{Numeric adjustment factor for species labels
+(default: \code{1.1}).}
 
-\item{ellipse_level}{Numeric probability level for ellipses (default: \code{0.68}).}
+\item{ellipse_level}{Numeric probability level for ellipses
+(default: \code{0.68}).}
 
-\item{base_colors}{Character vector of length 3 for sites, species, and env variables.}
+\item{base_colors}{Character vector of length 3 for sites, species, and env
+variables.}
 
-\item{base_shapes}{Numeric vector of length 3 for sites, species, and env variables.}
+\item{base_shapes}{Numeric vector of length 3 for sites, species, and env
+variables.}
 
-\item{base_sizes}{Numeric vector of length 3 for sites, species, and env variables.}
+\item{base_sizes}{Numeric vector of length 3 for sites, species, and env
+variables.}
 
-\item{legend_position}{\code{"right"} (default), \code{"top"}, \code{"bottom"}, \code{"left"}, or \code{"none"}.}
+\item{legend_position}{\code{"right"} (default), \code{"top"}, \code{"bottom"}, \code{"left"},
+or \code{"none"}.}
 }
 \value{
 A \code{ggplot} object representing the biplot.
@@ -137,6 +148,13 @@ Create a ggplot-based biplot for multivariate analysis objects
 
 \item \code{ggbiplot_vegan(prcomp)}: Method for \code{prcomp} objects
 
-\item \code{ggbiplot_vegan(default)}: Default method for creating biplots with vegan objects
+\item \code{ggbiplot_vegan(default)}: Default method for creating biplots with vegan
+objects
 
 }}
+\examples{
+library(vegan)
+data(varespec)
+vare_rda <- rda(varespec)
+ggbiplot_vegan(vare_rda)
+}

@@ -9,11 +9,11 @@
 \usage{
 ggbiplot(x, ...)
 
-\method{ggbiplot}{princomp}(x, choices = 1L:2L, scale = 1, pc.biplot = FALSE, ...)
+\method{ggbiplot}{princomp}(x, choices = c(1L, 2L), scale = 1, pc.biplot = FALSE, ...)
 
 \method{ggbiplot}{prcomp}(
   x,
-  choices = 1:2,
+  choices = c(1L, 2L),
   scale = 1,
   pc.biplot = FALSE,
   colordata = NULL,
@@ -24,7 +24,7 @@ ggbiplot(x, ...)
 \method{ggbiplot}{default}(
   x,
   y,
-  choices = 1:2,
+  choices = c(1L, 2L),
   var.axes = TRUE,
   col = c("black", "red"),
   cex = c(1, 1),
@@ -56,7 +56,8 @@ ggbiplot(x, ...)
 
 \item{pc.biplot}{Logical; if \code{TRUE}, scales by \code{sqrt(n)}.}
 
-\item{colordata}{Optional single-column \code{data.frame} for coloring observations.}
+\item{colordata}{Optional single-column \code{data.frame} for coloring
+observations.}
 
 \item{type}{\code{"p"} for points (default) or \code{"t"} for text labels.}
 
@@ -68,7 +69,7 @@ ggbiplot(x, ...)
 
 \item{cex}{Numeric vector of length 2 for text/point scaling.}
 
-\item{pch}{Numeric point shape (default: 16).}
+\item{pch}{Numeric point shape (default: \code{16}).}
 
 \item{xlabs}{Optional observation labels.}
 
@@ -78,15 +79,19 @@ ggbiplot(x, ...)
 
 \item{xlim, ylim}{Optional numeric vectors of length 2 for axis limits.}
 
-\item{arrow.len}{Numeric arrow head length in cm (default: 0.2).}
+\item{arrow.len}{Numeric arrow head length in cm (default: \code{0.2}).}
 
 \item{main, sub, xlab, ylab}{Optional plot titles and axis labels.}
 
-\item{jitter}{Numeric jitter factor (default: 0).}
+\item{jitter}{Numeric jitter factor (default: \code{0}).}
 }
 \value{
 A \code{ggplot} object.
 }
 \description{
 Biplot generic for PCA objects
+}
+\examples{
+pca <- prcomp(iris[, 1:4], scale. = TRUE)
+ggbiplot(pca, colordata = iris[, 5, drop = FALSE])
 }

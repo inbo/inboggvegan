@@ -12,8 +12,8 @@ ggscreeplot(
 )
 }
 \arguments{
-\item{pcobj}{An ordination or PCA object (\code{prcomp}, \code{princomp}, \code{rda}, \code{cca},
-\code{capscale}, or \code{lda}).}
+\item{pcobj}{An ordination or PCA object (\code{prcomp}, \code{princomp}, \code{rda},
+\code{cca}, \code{capscale}, or \code{lda}).}
 
 \item{type}{Character string specifying the type of screeplot:
 \itemize{
@@ -23,10 +23,10 @@ ggscreeplot(
 }}
 
 \item{max_axes}{Optional integer limiting the maximum number of axes shown
-on the x-axis (useful when datasets have many species/variables).}
+on the x-axis.}
 
 \item{bstick}{Logical; if \code{TRUE}, overlays the broken-stick distribution
-expectation using \code{vegan::bstick()} when supported (unconstrained models).}
+expectation using \code{vegan::bstick()} when supported.}
 }
 \value{
 A \code{ggplot} object showing the screeplot.
@@ -43,6 +43,6 @@ ggscreeplot(pca, type = "both")
 
 library(vegan)
 data(varespec)
-vare.rda <- rda(varespec)
-ggscreeplot(vare.rda, type = "pev", max_axes = 10, bstick = TRUE)
+vare_rda <- rda(varespec)
+ggscreeplot(vare_rda, type = "pev", max_axes = 10, bstick = TRUE)
 }

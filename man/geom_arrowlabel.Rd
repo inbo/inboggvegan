@@ -9,8 +9,8 @@ geom_arrowlabel(mapping, data, inherit.aes = FALSE, ...)
 \arguments{
 \item{mapping}{\code{ggplot2} aesthetic mapping created with \code{aes()}.}
 
-\item{data}{Data frame containing coordinates, labels, and positioning columns
-(\code{.hjust} and \code{.angle}).}
+\item{data}{Data frame containing coordinates, labels, and positioning
+columns (\code{.hjust} and \code{.angle}).}
 
 \item{inherit.aes}{Logical; default \code{FALSE}.}
 
@@ -20,5 +20,22 @@ geom_arrowlabel(mapping, data, inherit.aes = FALSE, ...)
 A \code{ggplot2} text layer positioned for arrow labels.
 }
 \description{
-Add labels to biplot arrows
+Adds text labels at the endpoints of biplot arrows with horizontal
+justification (\code{.hjust}) and rotation angle (\code{.angle}) to avoid overlap
+with the arrows.
+}
+\examples{
+library(ggplot2)
+library(vegan)
+data(varespec)
+vare_rda <- rda(varespec)
+sp_df <- get_display_data(vare_rda, display = "species")
+ggplot() +
+  geom_arrow(aes(x = PC1, y = PC2), data = sp_df, color = "red") +
+  geom_arrowlabel(
+    aes(x = PC1, y = PC2, label = Row.names),
+    data = sp_df,
+    color = "red"
+  ) +
+  coord_equal()
 }

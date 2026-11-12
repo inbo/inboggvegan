@@ -8,7 +8,7 @@ ggordihull_spider(
   x,
   groups,
   site_data = NULL,
-  choices = 1:2,
+  choices = c(1L, 2L),
   scaling = "symmetric",
   show_hull = TRUE,
   show_spider = TRUE,
@@ -24,11 +24,13 @@ number of sites), or the name of a column in \code{site_data}.}
 
 \item{site_data}{Optional \code{data.frame} containing site metadata.}
 
-\item{choices}{Integer vector of length 2 specifying axes to plot (default: \code{1:2}).}
+\item{choices}{Integer vector of length 2 specifying axes to plot.}
 
-\item{scaling}{Scaling method passed to \code{vegan::scores()} (default: \code{"symmetric"}).}
+\item{scaling}{Scaling method passed to \code{vegan::scores()}
+(default: \code{"symmetric"}).}
 
-\item{show_hull}{Logical; draw convex hull polygons around each group (default: \code{TRUE}).}
+\item{show_hull}{Logical; draw convex hull polygons around each group
+(default: \code{TRUE}).}
 
 \item{show_spider}{Logical; draw segments connecting each site to its group
 centroid (default: \code{TRUE}).}
@@ -42,7 +44,8 @@ A \code{ggplot} object.
 }
 \description{
 A \code{ggplot2} equivalent of \code{vegan::ordihull()} and \code{vegan::ordispider()} that
-works with any \code{vegan} ordination object (\code{rda}, \code{cca}, \code{capscale}, \code{metaMDS}).
+works with any \code{vegan} ordination object (\code{rda}, \code{cca}, \code{capscale},
+\code{metaMDS}).
 }
 \examples{
 library(vegan)

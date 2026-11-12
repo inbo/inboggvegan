@@ -13,7 +13,8 @@ geom_arrow(mapping, data, inherit.aes = FALSE, arrow_size = 0.5, ...)
 
 \item{inherit.aes}{Logical; default \code{FALSE}.}
 
-\item{arrow_size}{Numeric value specifying arrow head size in picas (default: 0.5).}
+\item{arrow_size}{Numeric value specifying arrow head size in picas
+(default: \code{0.5}).}
 
 \item{...}{Additional arguments passed to \code{geom_segment()}.}
 }
@@ -21,5 +22,16 @@ geom_arrow(mapping, data, inherit.aes = FALSE, arrow_size = 0.5, ...)
 A \code{ggplot2} segment layer with arrows.
 }
 \description{
-Draw arrows for biplot vectors
+Creates arrow segments from the origin \verb{(0, 0)} to specified points,
+typically used to represent species loadings or environmental effects.
+}
+\examples{
+library(ggplot2)
+library(vegan)
+data(varespec)
+vare_rda <- rda(varespec)
+sp_df <- get_display_data(vare_rda, display = "species")
+ggplot() +
+  geom_arrow(aes(x = PC1, y = PC2), data = sp_df, color = "red") +
+  coord_equal()
 }

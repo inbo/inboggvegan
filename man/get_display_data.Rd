@@ -7,7 +7,7 @@
 get_display_data(
   x,
   data = NULL,
-  choices = 1:2,
+  choices = c(1L, 2L),
   display = "sites",
   scaling = "species",
   merge_by = "row.numbers",
@@ -18,29 +18,42 @@ get_display_data(
 )
 }
 \arguments{
-\item{x}{An ordination object from \code{vegan} (\code{rda}, \code{cca}, \code{capscale}, \code{metaMDS}).}
+\item{x}{An ordination object from \code{vegan} (\code{rda}, \code{cca}, \code{capscale},
+\code{metaMDS}).}
 
-\item{data}{Optional data frame with descriptor/metadata variables to be merged.}
+\item{data}{Optional data frame with descriptor/metadata variables to merge.}
 
-\item{choices}{Integer vector of length 2 specifying which ordination axes to extract.}
+\item{choices}{Integer vector of length 2 specifying ordination axes.}
 
-\item{display}{Character string: \code{"sites"}, \code{"species"}, \code{"lc"}, \code{"bp"}, or \code{"cn"}.}
+\item{display}{Character string: \code{"sites"}, \code{"species"}, \code{"lc"}, \code{"bp"},
+or \code{"cn"}.}
 
-\item{scaling}{Numeric or character scaling method passed to \code{vegan::scores()}.}
+\item{scaling}{Numeric or character scaling method passed to
+\code{vegan::scores()}.}
 
-\item{merge_by}{Character string: \code{"row.numbers"}, \code{"row.names"}, or a column name in \code{data}.}
+\item{merge_by}{Character string: \code{"row.numbers"}, \code{"row.names"}, or a
+column name in \code{data}.}
 
 \item{species_abbrev}{Logical; if \code{TRUE}, abbreviate species names.}
 
-\item{species_adjust}{Numeric multiplier for adjusting label positions (default: 1.1).}
+\item{species_adjust}{Numeric multiplier for adjusting label positions
+(default: \code{1.1}).}
 
-\item{remove_row_prefix}{Logical; if \code{TRUE}, strips \code{"row"} or \code{"sit"} prefixes.}
+\item{remove_row_prefix}{Logical; if \code{TRUE}, strips \code{"row"} or \code{"sit"}
+prefixes.}
 
 \item{...}{Additional arguments passed to \code{vegan::scores()}.}
 }
 \value{
-A \code{data.frame} with ordination coordinates and attributes, or \code{NULL} if unavailable.
+A \code{data.frame} with ordination coordinates and attributes, or
+\code{NULL} if unavailable.
 }
 \description{
 Extract and prepare display data from ordination objects
+}
+\examples{
+library(vegan)
+data(varespec)
+vare_rda <- rda(varespec)
+site_scores <- get_display_data(vare_rda, display = "sites")
 }
