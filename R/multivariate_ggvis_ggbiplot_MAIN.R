@@ -1,4 +1,4 @@
-# Internal layer helpers to keep cyclomatic complexity low
+# Internal layer helpers to keep cyclomatic complexity <= 15
 set_xy_mapping <- function(mapping, ax1, ax2,
                            default_mapping = ggplot2::aes()) {
   if (is.null(mapping)) {
@@ -8,6 +8,48 @@ set_xy_mapping <- function(mapping, ax1, ax2,
   mapping$y <- as.symbol(ax2)
   class(mapping) <- "uneval"
   mapping
+}
+
+init_biplot_base <- function(df_u) {
+  axis_labels <- attr(df_u, "axis.labels")
+  if (is.null(axis_labels)) {
+    warning("site_data should have the attribute axis.labels.")
+    axis_labels <- c("", "")
+  }
+  mybreaks <- pretty(c(df_u[[1L]], df_u[[2L]]), n = 5L, eps.correct = 1L)
+  ax1 <- names(df_u)[1L]
+  ax2 <- names(df_u)[2L]
+
+  ggplot2::ggplot(
+    data = df_u,
+    ggplot2::aes(x = .data[[ax1]], y = .data[[ax2]])
+  ) +
+    ggplot2::xlab(axis_labels[1L]) +
+    ggplot2::ylab(axis_labels[2L]) +
+    ggplot2::coord_equal() +
+    ggplot2::scale_x_continuous(breaks = mybreaks) +
+    ggplot2::scale_y_continuous(breaks = mybreaks)
+}
+
+add_site_layer <- function(g,
+                           df_u,
+                           site_geom,
+                           site_mapping,
+                           base_color,
+                           base_shape,
+                           base_size) {
+  if (site_geom == "blank") {
+    return(g)
+  }
+  site_mapping <- set_xy_mapping(site_mapping, names(df_u)[1L], names(df_u)[2L])
+  g + geom_selector(
+    data = df_u,
+    geom = site_geom,
+    mapping = site_mapping,
+    base_color = base_color,
+    base_shape = base_shape,
+    base_size = base_size
+  )
 }
 
 add_centroid_layer <- function(g,
@@ -130,6 +172,39 @@ add_species_layer <- function(g,
   g
 }
 
+add_corcircle_layer <- function(g, df_v, cor_circle_geom, base_color) {
+  if (cor_circle_geom == "blank") {
+    return(g)
+  }
+  r <- attr(df_v, "r")
+  if (is.null(r) || !is.numeric(r) || is.na(r)) {
+    r <- 1
+  }
+  g + geom_corcircle(radius = r, color = base_color)
+}
+
+add_lc_layer <- function(g,
+                         df_lc,
+                         lc_geom,
+                         lc_mapping,
+                         base_color,
+                         base_shape,
+                         base_size) {
+  if (is.null(df_lc) || lc_geom == "blank") {
+    return(g)
+  }
+  lc_mapping <- set_xy_mapping(lc_mapping, names(df_lc)[1L], names(df_lc)[2L])
+  g + geom_selector(
+    data = df_lc,
+    geom = lc_geom,
+    mapping = lc_mapping,
+    base_color = base_color,
+    base_shape = base_shape,
+    base_size = base_size,
+    inherit.aes = FALSE
+  )
+}
+
 add_bp_layer <- function(g,
                          df_bp,
                          bp_geom,
@@ -180,7 +255,39 @@ add_bp_layer <- function(g,
   g
 }
 
+add_cn_layer <- function(g,
+                         df_cn,
+                         cn_geom,
+                         cn_mapping,
+                         base_color,
+                         base_shape,
+                         base_size) {
+  if (is.null(df_cn) || cn_geom == "blank") {
+    return(g)
+  }
+  cn_mapping <- set_xy_mapping(
+    cn_mapping,
+    names(df_cn)[1L],
+    names(df_cn)[2L],
+    default_mapping = ggplot2::aes(label = .data$.level)
+  )
+  g + geom_selector(
+    data = df_cn,
+    geom = cn_geom,
+    mapping = cn_mapping,
+    base_color = base_color,
+    base_shape = base_shape,
+    base_size = base_size,
+    inherit.aes = FALSE
+  )
+}
+
 #' Create a ggplot-based biplot for multivariate analysis objects
+#'
+#' This function creates biplots (visualization of both observations and
+#' variables) for multivariate analysis objects including `vegan` ordination
+#' objects (`rda`, `cca`, `capscale`) and standard R PCA objects (`prcomp`,
+#' `princomp`).
 #'
 #' @param x An ordination object (`rda`, `cca`, `capscale`, `prcomp`, or
 #'   `princomp`).
@@ -233,7 +340,7 @@ ggbiplot_vegan.princomp <- function(x, ...) {
 ggbiplot_vegan.prcomp <- function(x, ...) {
   ggbiplot.prcomp(x, ...)
 }
-
+#nolint start
 #' @describeIn ggbiplot_vegan Default method for creating biplots with vegan
 #'   objects
 #' @param choices Integer vector of length 2 specifying which axes to plot.
@@ -279,7 +386,8 @@ ggbiplot_vegan.prcomp <- function(x, ...) {
 #' @importFrom ggplot2 scale_y_continuous stat_ellipse theme labs rel
 #' @importFrom rlang .data
 #' @export
-#' @method ggbiplot_vegan default
+#' @method ggbiplot_vegan default 
+#nolint end
 ggbiplot_vegan.default <- function(
   x,
   choices = c(1L, 2L),
@@ -353,91 +461,74 @@ ggbiplot_vegan.default <- function(
     display = "cn"
   )
 
-  axis_labels <- attr(df_u, "axis.labels")
-  if (is.null(axis_labels)) {
-    warning("site_data should have the attribute axis.labels.")
-    axis_labels <- c("", "")
-  }
-
-  r <- attr(df_v, "r")
-  if (is.null(r) || !is.numeric(r) || is.na(r)) {
-    r <- 1
-  }
-
-  mybreaks <- pretty(c(df_u[[1L]], df_u[[2L]]), n = 5L, eps.correct = 1L)
   ax1 <- names(df_u)[1L]
   ax2 <- names(df_u)[2L]
 
-  g <- ggplot(data = df_u, aes(x = .data[[ax1]], y = .data[[ax2]])) +
-    xlab(axis_labels[1L]) +
-    ylab(axis_labels[2L]) +
-    coord_equal() +
-    scale_x_continuous(breaks = mybreaks) +
-    scale_y_continuous(breaks = mybreaks)
-
-  if (site_geom != "blank") {
-    site_mapping <- set_xy_mapping(site_mapping, ax1, ax2)
-    g <- g + geom_selector(
-      data = df_u,
-      geom = site_geom,
-      mapping = site_mapping,
-      base_color = base_colors[1L],
-      base_shape = base_shapes[1L],
-      base_size = base_sizes[1L]
-    )
-  }
-
+  g <- init_biplot_base(df_u)
+  g <- add_site_layer(
+    g,
+    df_u,
+    site_geom,
+    site_mapping,
+    base_colors[1L],
+    base_shapes[1L],
+    base_sizes[1L]
+  )
   g <- add_centroid_layer(
-    g, df_u, centroid_geom, centroid_mapping, base_colors[1L], base_sizes[1L]
+    g,
+    df_u,
+    centroid_geom,
+    centroid_mapping,
+    base_colors[1L],
+    base_sizes[1L]
   )
   g <- add_ellipse_layer(
-    g, df_u, ax1, ax2, ellipse_geom, ellipse_mapping, ellipse_level,
+    g,
+    df_u,
+    ax1,
+    ax2,
+    ellipse_geom,
+    ellipse_mapping,
+    ellipse_level,
     base_colors[1L]
   )
   g <- add_species_layer(
-    g, df_v, species_geom, species_mapping,
-    base_colors[2L], base_shapes[2L], base_sizes[2L]
+    g,
+    df_v,
+    species_geom,
+    species_mapping,
+    base_colors[2L],
+    base_shapes[2L],
+    base_sizes[2L]
   )
-
-  if (cor_circle_geom != "blank") {
-    g <- g + geom_corcircle(radius = r, color = base_colors[2L])
-  }
-
-  if (!is.null(df_lc) && lc_geom != "blank") {
-    lc_mapping <- set_xy_mapping(lc_mapping, names(df_lc)[1L], names(df_lc)[2L])
-    g <- g + geom_selector(
-      data = df_lc,
-      geom = lc_geom,
-      mapping = lc_mapping,
-      base_color = base_colors[1L],
-      base_shape = base_shapes[1L],
-      base_size = base_sizes[1L],
-      inherit.aes = FALSE
-    )
-  }
-
+  g <- add_corcircle_layer(g, df_v, cor_circle_geom, base_colors[2L])
+  g <- add_lc_layer(
+    g,
+    df_lc,
+    lc_geom,
+    lc_mapping,
+    base_colors[1L],
+    base_shapes[1L],
+    base_sizes[1L]
+  )
   g <- add_bp_layer(
-    g, df_bp, bp_geom, bp_mapping,
-    base_colors[3L], base_shapes[3L], base_sizes[3L]
+    g,
+    df_bp,
+    bp_geom,
+    bp_mapping,
+    base_colors[3L],
+    base_shapes[3L],
+    base_sizes[3L]
   )
-
-  if (!is.null(df_cn) && cn_geom != "blank") {
-    cn_mapping <- set_xy_mapping(
-      cn_mapping,
-      names(df_cn)[1L],
-      names(df_cn)[2L],
-      default_mapping = aes(label = .data$.level)
-    )
-    g <- g + geom_selector(
-      data = df_cn,
-      geom = cn_geom,
-      mapping = cn_mapping,
-      base_color = base_colors[3L],
-      base_shape = base_shapes[3L],
-      base_size = base_sizes[3L],
-      inherit.aes = FALSE
-    )
-  }
+  g <- add_cn_layer(
+    g,
+    df_cn,
+    cn_geom,
+    cn_mapping,
+    base_colors[3L],
+    base_shapes[3L],
+    base_sizes[3L]
+  )
 
   g +
     labs(colour = NULL, shape = NULL) +
