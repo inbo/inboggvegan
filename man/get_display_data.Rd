@@ -21,7 +21,8 @@ get_display_data(
 \item{x}{An ordination object from \code{vegan} (\code{rda}, \code{cca}, \code{capscale},
 \code{metaMDS}).}
 
-\item{data}{Optional data frame with descriptor/metadata variables to merge.}
+\item{data}{Optional data frame with descriptor/metadata variables to
+merge.}
 
 \item{choices}{Integer vector of length 2 specifying ordination axes.}
 

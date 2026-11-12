@@ -1,3 +1,8 @@
+# Internal helper to validate score matrices cleanly
+is_valid_matrix <- function(mat) {
+  !is.null(mat) && is.matrix(mat) && nrow(mat) > 0L && !all(is.na(mat))
+}
+
 # Internal helper for continuous environmental biplot scores ("bp")
 extract_bp_data <- function(x, choices, scaling, species_adjust, ...) {
   bp <- tryCatch(
@@ -10,7 +15,7 @@ extract_bp_data <- function(x, choices, scaling, species_adjust, ...) {
     ),
     error = function(e) NULL
   )
-  if (is.null(bp) || !is.matrix(bp) || nrow(bp) == 0L || all(is.na(bp))) {
+  if (!is_valid_matrix(bp)) {
     return(NULL)
   }
   mul <- tryCatch(vegan::ordiArrowMul(bp, fill = 0.95), error = function(e) 1)
@@ -25,7 +30,7 @@ extract_bp_data <- function(x, choices, scaling, species_adjust, ...) {
     ),
     error = function(e) NULL
   )
-  if (!is.null(cn) && is.matrix(cn) && nrow(cn) > 0L && !all(is.na(cn))) {
+  if (is_valid_matrix(cn)) {
     bp <- bp[!(rownames(bp) %in% rownames(cn)), , drop = FALSE]
     if (nrow(bp) == 0L) {
       return(NULL)
@@ -51,7 +56,7 @@ extract_cn_data <- function(x, choices, scaling, ...) {
     ),
     error = function(e) NULL
   )
-  if (is.null(cn) || !is.matrix(cn) || nrow(cn) == 0L || all(is.na(cn))) {
+  if (!is_valid_matrix(cn)) {
     return(NULL)
   }
   df_cn <- as.data.frame(cn)
@@ -83,7 +88,69 @@ extract_cn_data <- function(x, choices, scaling, ...) {
   df_cn
 }
 
-# Internal helper to merge score data frame with user descriptor data
+clean_score_rownames <- function(display_data, remove_row_prefix) {
+  prefixes <- substring(rownames(display_data), 1L, 3L)
+  if (all(prefixes %in% c("row", "sit")) && isTRUE(remove_row_prefix)) {
+    rownames(display_data) <- substring(
+      rownames(display_data),
+      4L,
+      nchar(rownames(display_data))
+    )
+  }
+  display_data$Row.names <- rownames(display_data)
+  display_data$Row.numbers <- seq_len(nrow(display_data))
+  display_data
+}
+
+normalize_merge_by <- function(merge_by) {
+  if (merge_by %in% c("rownames", "row.names", "Row.names", ".Row.names")) {
+    return("Row.names")
+  }
+  if (
+    merge_by %in% c("rownumbers", "row.numbers", "Row.numbers", ".Row.numbers")
+  ) {
+    return("Row.numbers")
+  }
+  merge_by
+}
+
+merge_by_numbers <- function(display_data, data) {
+  if (nrow(display_data) != nrow(data)) {
+    stop(
+      "Merge on row.numbers for 2 datasets that do not have ",
+      "the same number of rows"
+    )
+  }
+  extra_cols <- setdiff(names(data), c("Row.names", "Row.numbers"))
+  if (length(extra_cols) > 0L) {
+    display_data <- cbind(display_data, data[, extra_cols, drop = FALSE])
+  }
+  display_data
+}
+
+merge_by_key <- function(display_data, data, merge_by) {
+  if (!all(rownames(display_data) %in% data[[merge_by]])) {
+    stop(
+      "Not all rownames of the display data are found in the ",
+      "merge_by column in the descriptor data"
+    )
+  }
+  extra_data <- data[, setdiff(names(data), "Row.numbers"), drop = FALSE]
+  if (merge_by != "Row.names") {
+    extra_data$Row.names <- NULL
+  }
+  merged <- merge(
+    display_data,
+    extra_data,
+    by.x = "Row.names",
+    by.y = merge_by,
+    all.x = TRUE,
+    sort = FALSE
+  )
+  col_order <- c(2L, 3L, 1L, seq_len(ncol(merged))[-c(1L, 2L, 3L)])
+  merged[, col_order, drop = FALSE]
+}
+
 merge_descriptor_data <- function(display_data, data, merge_by) {
   if (is.null(data)) {
     data <- data.frame(
@@ -96,46 +163,11 @@ merge_descriptor_data <- function(display_data, data, merge_by) {
     data$Row.names <- rownames(data)
   }
 
-  if (merge_by %in% c("rownames", "row.names", "Row.names", ".Row.names")) {
-    merge_by <- "Row.names"
-  } else if (
-    merge_by %in% c("rownumbers", "row.numbers", "Row.numbers", ".Row.numbers")
-  ) {
-    merge_by <- "Row.numbers"
-  }
-
+  merge_by <- normalize_merge_by(merge_by)
   if (merge_by == "Row.numbers") {
-    if (nrow(display_data) != nrow(data)) {
-      stop(
-        "Merge on row.numbers for 2 datasets that do not have ",
-        "the same number of rows"
-      )
-    }
-    extra_cols <- setdiff(names(data), c("Row.names", "Row.numbers"))
-    if (length(extra_cols) > 0L) {
-      display_data <- cbind(display_data, data[, extra_cols, drop = FALSE])
-    }
+    display_data <- merge_by_numbers(display_data, data)
   } else {
-    if (!all(rownames(display_data) %in% data[[merge_by]])) {
-      stop(
-        "Not all rownames of the display data are found in the ",
-        "merge_by column in the descriptor data"
-      )
-    }
-    extra_data <- data[, setdiff(names(data), "Row.numbers"), drop = FALSE]
-    if (merge_by != "Row.names") {
-      extra_data$Row.names <- NULL
-    }
-    display_data <- merge(
-      display_data,
-      extra_data,
-      by.x = "Row.names",
-      by.y = merge_by,
-      all.x = TRUE,
-      sort = FALSE
-    )
-    col_order <- c(2L, 3L, 1L, seq_len(ncol(display_data))[-c(1L, 2L, 3L)])
-    display_data <- display_data[, col_order, drop = FALSE]
+    display_data <- merge_by_key(display_data, data, merge_by)
   }
 
   if (nrow(display_data) < 2L) {
@@ -144,7 +176,27 @@ merge_descriptor_data <- function(display_data, data, merge_by) {
   display_data
 }
 
-# Internal helper to attach display-specific attributes and columns
+decorate_sites_data <- function(display_data, x, scaling, choices) {
+  is_sp_scale <- identical(scaling, 2) ||
+    identical(scaling, 2L) ||
+    identical(scaling, "species")
+  if (is_sp_scale) {
+    u_axis_labs <- paste("standardized", colnames(display_data)[c(1L, 2L)])
+  } else {
+    u_axis_labs <- colnames(display_data)[c(1L, 2L)]
+  }
+  eigs <- c(x$CCA$eig, x$CA$eig)
+  if (!is.null(eigs) && length(eigs) >= max(choices)) {
+    pct <- 100 * eigs[choices] / sum(eigs[eigs > 0])
+    u_axis_labs <- paste(
+      u_axis_labs,
+      sprintf("(%0.1f%% explained var.)", pct)
+    )
+  }
+  attr(display_data, "axis.labels") <- u_axis_labs
+  display_data
+}
+
 decorate_display_data <- function(display_data,
                                   x,
                                   display,
@@ -153,22 +205,9 @@ decorate_display_data <- function(display_data,
                                   species_abbrev,
                                   species_adjust) {
   if (display == "sites") {
-    if (identical(scaling, 2) || identical(scaling, 2L) ||
-          identical(scaling, "species")) {
-      u_axis_labs <- paste("standardized", colnames(display_data)[c(1L, 2L)])
-    } else {
-      u_axis_labs <- colnames(display_data)[c(1L, 2L)]
-    }
-    eigs <- c(x$CCA$eig, x$CA$eig)
-    if (!is.null(eigs) && length(eigs) >= max(choices)) {
-      pct <- 100 * eigs[choices] / sum(eigs[eigs > 0])
-      u_axis_labs <- paste(
-        u_axis_labs,
-        sprintf("(%0.1f%% explained var.)", pct)
-      )
-    }
-    attr(display_data, "axis.labels") <- u_axis_labs
-  } else if (display == "species") {
+    return(decorate_sites_data(display_data, x, scaling, choices))
+  }
+  if (display == "species") {
     if (isTRUE(species_abbrev)) {
       display_data$Row.names <- abbreviate(display_data$Row.names)
     }
@@ -181,11 +220,34 @@ decorate_display_data <- function(display_data,
   display_data
 }
 
+extract_standard_scores <- function(x, display, scaling, choices, ...) {
+  raw_scores <- tryCatch(
+    vegan::scores(
+      x,
+      display = display,
+      scaling = scaling,
+      choices = choices,
+      ...
+    ),
+    error = function(e) NULL
+  )
+  if (is.null(raw_scores) || length(raw_scores) == 0L ||
+        all(is.na(raw_scores))) {
+    return(NULL)
+  }
+  display_data <- as.data.frame(raw_scores)
+  if (nrow(display_data) == 0L) {
+    return(NULL)
+  }
+  display_data
+}
+
 #' Extract and prepare display data from ordination objects
 #'
 #' @param x An ordination object from `vegan` (`rda`, `cca`, `capscale`,
 #'   `metaMDS`).
-#' @param data Optional data frame with descriptor/metadata variables to merge.
+#' @param data Optional data frame with descriptor/metadata variables to
+#'   merge.
 #' @param choices Integer vector of length 2 specifying ordination axes.
 #' @param display Character string: `"sites"`, `"species"`, `"lc"`, `"bp"`,
 #'   or `"cn"`.
@@ -233,37 +295,12 @@ get_display_data <- function(x,
     return(extract_cn_data(x, choices, scaling, ...))
   }
 
-  raw_scores <- tryCatch(
-    vegan::scores(
-      x,
-      display = display,
-      scaling = scaling,
-      choices = choices,
-      ...
-    ),
-    error = function(e) NULL
-  )
-  if (is.null(raw_scores) || length(raw_scores) == 0L ||
-        all(is.na(raw_scores))) {
+  display_data <- extract_standard_scores(x, display, scaling, choices, ...)
+  if (is.null(display_data)) {
     return(NULL)
   }
 
-  display_data <- as.data.frame(raw_scores)
-  if (nrow(display_data) == 0L) {
-    return(NULL)
-  }
-
-  prefixes <- substring(rownames(display_data), 1L, 3L)
-  if (all(prefixes %in% c("row", "sit")) && isTRUE(remove_row_prefix)) {
-    rownames(display_data) <- substring(
-      rownames(display_data),
-      4L,
-      nchar(rownames(display_data))
-    )
-  }
-  display_data$Row.names <- rownames(display_data)
-  display_data$Row.numbers <- seq_len(nrow(display_data))
-
+  display_data <- clean_score_rownames(display_data, remove_row_prefix)
   display_data <- merge_descriptor_data(display_data, data, merge_by)
   decorate_display_data(
     display_data,
@@ -276,6 +313,23 @@ get_display_data <- function(x,
   )
 }
 
+build_text_geom <- function(mapping, args, base_size) {
+  if (is.null(mapping$size) && !is.null(base_size)) {
+    args$size <- ggplot2::rel(base_size)
+  }
+  do.call(ggplot2::geom_text, args)
+}
+
+build_point_geom <- function(mapping, args, base_shape, base_size) {
+  if (is.null(mapping$size) && !is.null(base_size)) {
+    args$size <- ggplot2::rel(base_size)
+  }
+  if (is.null(mapping$shape) && !is.null(base_shape)) {
+    args$shape <- base_shape
+  }
+  do.call(ggplot2::geom_point, args)
+}
+
 #' Select and configure geom layers for biplot elements
 #'
 #' @param mapping `ggplot2` aesthetic mapping created with `aes()`.
@@ -285,7 +339,8 @@ get_display_data <- function(x,
 #' @param base_color Base color when `colour` is not mapped.
 #' @param base_shape Base point shape when `shape` is not mapped.
 #' @param base_size Base size when `size` is not mapped.
-#' @param ... Additional arguments passed to the underlying `geom_*` function.
+#' @param ... Additional arguments passed to the underlying `geom_*`
+#'   function.
 #'
 #' @return A `ggplot2` layer or `NULL` if `geom = "blank"`.
 #' @importFrom ggplot2 geom_text geom_point geom_line geom_path rel
@@ -306,45 +361,29 @@ get_display_data <- function(x,
 geom_selector <- function(mapping,
                           data,
                           geom,
-                          base_color,
-                          base_shape,
-                          base_size,
+                          base_color = NULL,
+                          base_shape = NULL,
+                          base_size = NULL,
                           ...) {
   if (geom == "blank") {
     return(NULL)
   }
 
   has_col <- !is.null(mapping$colour) || !is.null(mapping$color)
-  has_sz <- !is.null(mapping$size)
-  has_shp <- !is.null(mapping$shape)
-
   args <- list(mapping = mapping, data = data, ...)
-  if (!has_col && !missing(base_color)) {
+  if (!has_col && !is.null(base_color)) {
     args$color <- base_color
   }
 
-  if (geom == "text") {
-    if (!has_sz && !missing(base_size)) {
-      args$size <- ggplot2::rel(base_size)
+  switch(
+    geom,
+    text = build_text_geom(mapping, args, base_size),
+    point = build_point_geom(mapping, args, base_shape, base_size),
+    line = do.call(ggplot2::geom_line, args),
+    path = do.call(ggplot2::geom_path, args),
+    {
+      warning(paste("no geom_selector defined for geom", geom))
+      NULL
     }
-    return(do.call(ggplot2::geom_text, args))
-  }
-  if (geom == "point") {
-    if (!has_sz && !missing(base_size)) {
-      args$size <- ggplot2::rel(base_size)
-    }
-    if (!has_shp && !missing(base_shape)) {
-      args$shape <- base_shape
-    }
-    return(do.call(ggplot2::geom_point, args))
-  }
-  if (geom == "line") {
-    return(do.call(ggplot2::geom_line, args))
-  }
-  if (geom == "path") {
-    return(do.call(ggplot2::geom_path, args))
-  }
-
-  warning(paste("no geom_selector defined for geom", geom))
-  NULL
+  )
 }

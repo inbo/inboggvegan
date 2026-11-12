@@ -134,7 +134,10 @@ or \code{"none"}.}
 A \code{ggplot} object representing the biplot.
 }
 \description{
-Create a ggplot-based biplot for multivariate analysis objects
+This function creates biplots (visualization of both observations and
+variables) for multivariate analysis objects including \code{vegan} ordination
+objects (\code{rda}, \code{cca}, \code{capscale}) and standard R PCA objects (\code{prcomp},
+\code{princomp}).
 }
 \section{Methods (by class)}{
 \itemize{

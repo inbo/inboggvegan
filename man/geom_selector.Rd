@@ -4,7 +4,15 @@
 \alias{geom_selector}
 \title{Select and configure geom layers for biplot elements}
 \usage{
-geom_selector(mapping, data, geom, base_color, base_shape, base_size, ...)
+geom_selector(
+  mapping,
+  data,
+  geom,
+  base_color = NULL,
+  base_shape = NULL,
+  base_size = NULL,
+  ...
+)
 }
 \arguments{
 \item{mapping}{\code{ggplot2} aesthetic mapping created with \code{aes()}.}
@@ -20,7 +28,8 @@ or \code{"path"}.}
 
 \item{base_size}{Base size when \code{size} is not mapped.}
 
-\item{...}{Additional arguments passed to the underlying \verb{geom_*} function.}
+\item{...}{Additional arguments passed to the underlying \verb{geom_*}
+function.}
 }
 \value{
 A \code{ggplot2} layer or \code{NULL} if \code{geom = "blank"}.
