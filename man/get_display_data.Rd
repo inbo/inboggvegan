@@ -2,34 +2,45 @@
 % Please edit documentation in R/multivariate_ggvis_ggbiplot_helper.R
 \name{get_display_data}
 \alias{get_display_data}
-\title{Title}
+\title{Extract and prepare display data from ordination objects}
 \usage{
-get_display_data(x, data = NULL, choices = 1:2, display = "sites",
-  scaling = "species", merge_by = "row.numbers",
-  species_abbrev = FALSE, species_adjust = 1.1,
-  remove_row_prefix = TRUE, ...)
+get_display_data(
+  x,
+  data = NULL,
+  choices = 1:2,
+  display = "sites",
+  scaling = "species",
+  merge_by = "row.numbers",
+  species_abbrev = FALSE,
+  species_adjust = 1.1,
+  remove_row_prefix = TRUE,
+  ...
+)
 }
 \arguments{
-\item{x}{object}
+\item{x}{An ordination object from \code{vegan} (\code{rda}, \code{cca}, \code{capscale}, \code{metaMDS}).}
 
-\item{data}{descriptor dataset}
+\item{data}{Optional data frame with descriptor/metadata variables to be merged.}
 
-\item{choices}{which axes (vector of length 2)}
+\item{choices}{Integer vector of length 2 specifying which ordination axes to extract.}
 
-\item{display}{sites | species | lc | bp | cn}
+\item{display}{Character string: \code{"sites"}, \code{"species"}, \code{"lc"}, \code{"bp"}, or \code{"cn"}.}
 
-\item{scaling}{??}
+\item{scaling}{Numeric or character scaling method passed to \code{vegan::scores()}.}
 
-\item{merge_by}{merge rownames of object scores with this column in the descriptor dataset}
+\item{merge_by}{Character string: \code{"row.numbers"}, \code{"row.names"}, or a column name in \code{data}.}
 
-\item{species_abbrev}{should the species axes names be abbreviated}
+\item{species_abbrev}{Logical; if \code{TRUE}, abbreviate species names.}
 
-\item{species_adjust}{text adjustment to avoid overlap with arrows}
+\item{species_adjust}{Numeric multiplier for adjusting label positions (default: 1.1).}
 
-\item{remove_row_prefix}{remove the default row prefix "Row"}
+\item{remove_row_prefix}{Logical; if \code{TRUE}, strips \code{"row"} or \code{"sit"} prefixes.}
 
-\item{...}{other arguments passed to the vegan::scores function}
+\item{...}{Additional arguments passed to \code{vegan::scores()}.}
+}
+\value{
+A \code{data.frame} with ordination coordinates and attributes, or \code{NULL} if unavailable.
 }
 \description{
-Title
+Extract and prepare display data from ordination objects
 }

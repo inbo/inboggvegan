@@ -1,74 +1,19 @@
-
-################################################################################
-
 #' Extract and prepare display data from ordination objects
 #'
-#' This helper function extracts coordinate data (scores) from ordination objects
-#' and merges it with optional descriptor data for plotting. It handles different
-#' types of scores (sites, species, environmental variables, etc.) and prepares
-#' them for use in ggplot-based visualizations.
+#' @param x An ordination object from `vegan` (`rda`, `cca`, `capscale`, `metaMDS`).
+#' @param data Optional data frame with descriptor/metadata variables to be merged.
+#' @param choices Integer vector of length 2 specifying which ordination axes to extract.
+#' @param display Character string: `"sites"`, `"species"`, `"lc"`, `"bp"`, or `"cn"`.
+#' @param scaling Numeric or character scaling method passed to `vegan::scores()`.
+#' @param merge_by Character string: `"row.numbers"`, `"row.names"`, or a column name in `data`.
+#' @param species_abbrev Logical; if `TRUE`, abbreviate species names.
+#' @param species_adjust Numeric multiplier for adjusting label positions (default: 1.1).
+#' @param remove_row_prefix Logical; if `TRUE`, strips `"row"` or `"sit"` prefixes.
+#' @param ... Additional arguments passed to `vegan::scores()`.
 #'
-#' @param x An ordination object (from vegan package: rda, cca, capscale, or similar)
-#' @param data Optional data frame with descriptor/metadata variables to be merged
-#'   with the ordination scores. Should have matching row identifiers.
-#' @param choices Integer vector of length 2 specifying which ordination axes to extract
-#'   (default: 1:2)
-#' @param display Character string specifying which type of scores to extract:
-#'   \itemize{
-#'     \item "sites" - sample/site scores (default)
-#'     \item "species" - species/variable scores
-#'     \item "lc" - linear constraints
-#'     \item "bp" - biplot scores for continuous environmental variables
-#'     \item "cn" - centroids for discrete environmental variables
-#'   }
-#' @param scaling Character string or numeric specifying the scaling method.
-#'   Common values are 1 (site scaling) or 2/"species" (species scaling).
-#'   See \code{vegan::scores()} for details.
-#' @param merge_by Character string specifying how to merge the descriptor data:
-#'   \itemize{
-#'     \item "row.numbers" (default) - merge by row position (cbind)
-#'     \item "row.names" - merge by matching row names
-#'     \item Any column name - merge by matching values in that column
-#'   }
-#' @param species_abbrev Logical; if TRUE, abbreviate species names in the output
-#'   (default: FALSE). Only applies when display = "species".
-#' @param species_adjust Numeric multiplier for adjusting species label positions
-#'   to avoid overlap with arrows (default: 1.1). Only applies when display = "species".
-#' @param remove_row_prefix Logical; if TRUE (default), remove "row" or "sit" prefix
-#'   from row names that are automatically added by some functions
-#' @param ... Additional arguments passed to \code{vegan::scores()}
-#'
-#' @return A data frame with ordination coordinates and merged descriptor data.
-#'   For species display, includes additional columns for label positioning (.angle, .hjust).
-#'   Returns NULL if no data is available for the requested display type.
-#'   The data frame has attributes:
-#'   \itemize{
-#'     \item axis.labels - formatted axis labels with explained variance (for sites)
-#'     \item r - radius of correlation circle (for species)
-#'   }
-#'
+#' @return A `data.frame` with ordination coordinates and attributes, or `NULL` if unavailable.
+#' @importFrom vegan scores ordiArrowMul eigenvals
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' library(vegan)
-#' data(varespec)
-#' data(varechem)
-#' 
-#' vare.rda <- rda(varespec)
-#' 
-#' # Extract site scores
-#' site_scores <- get_display_data(vare.rda, display = "sites")
-#' 
-#' # Extract species scores with abbreviation
-#' species_scores <- get_display_data(vare.rda, display = "species", 
-#'                                     species_abbrev = TRUE)
-#' 
-#' # Extract site scores merged with environmental data
-#' site_data <- get_display_data(vare.rda, data = varechem, 
-#'                               display = "sites", merge_by = "row.names")
-#' }
-#'
 get_display_data <- function(x,
                              data = NULL,
                              choices = 1:2,
@@ -78,258 +23,198 @@ get_display_data <- function(x,
                              species_abbrev = FALSE,
                              species_adjust = 1.1,
                              remove_row_prefix = TRUE,
-                             ...){
-  #Control input arguments
-  if (length(choices) != 2) stop("Choices must contain exactly 2 elements")
-
+                             ...) {
+  if (length(choices) != 2L) {
+    stop("Choices must contain exactly 2 elements")
+  }
   
+  # Constrained-only displays ("lc", "bp", "cn") return NULL on unconstrained models
+  if (display %in% c("lc", "bp", "cn") && is.null(x$CCA)) {
+    return(NULL)
+  }
   
-  #get the effective data
-  display_data <- as.data.frame(vegan::scores(x, display = display, scaling = scaling, choices=choices))
-  if(nrow(display_data) > 0){
-    if(all(substring(rownames(display_data),1,3) %in% c("row", "sit")) & remove_row_prefix == TRUE) {
-      rownames(display_data) <- substring(rownames(display_data), 4, nchar(rownames(display_data)))
+  # Handle "bp" (biplot arrows for continuous constraints) directly
+  if (display == "bp") {
+    bp <- tryCatch(
+      vegan::scores(x, display = "bp", scaling = scaling, choices = choices, ...),
+      error = function(e) NULL
+    )
+    if (is.null(bp) || !is.matrix(bp) || nrow(bp) == 0L || all(is.na(bp))) {
+      return(NULL)
     }
-    display_data$Row.names <- rownames(display_data)
-    display_data$Row.numbers <- 1:nrow(display_data)
-
-    #get and convert the descriptive data
-    if (is.null(data)){
-      data <- data.frame(Row.numbers = 1:nrow(display_data), Row.names = rownames(display_data))
+    mul <- tryCatch(vegan::ordiArrowMul(bp, fill = 0.95), error = function(e) 1)
+    bp <- mul * bp
+    cn <- tryCatch(
+      vegan::scores(x, display = "cn", scaling = scaling, choices = choices, ...),
+      error = function(e) NULL
+    )
+    if (!is.null(cn) && is.matrix(cn) && nrow(cn) > 0L && !all(is.na(cn))) {
+      bp <- bp[!(rownames(bp) %in% rownames(cn)), , drop = FALSE]
+      if (nrow(bp) == 0L) return(NULL)
+    }
+    df.bp <- as.data.frame(bp)
+    df.bp$.bpname <- rownames(bp)
+    df.bp$.angle <- (180 / pi) * atan(df.bp[, 2] / df.bp[, 1])
+    df.bp$.hjust <- (1 - species_adjust * sign(df.bp[, 1])) / 2
+    df.bp$Row.names <- rownames(df.bp)
+    return(df.bp)
+  }
+  
+  # Handle "cn" (centroids for factor constraints) directly
+  if (display == "cn") {
+    cn <- tryCatch(
+      vegan::scores(x, display = "cn", scaling = scaling, choices = choices, ...),
+      error = function(e) NULL
+    )
+    if (is.null(cn) || !is.matrix(cn) || nrow(cn) == 0L || all(is.na(cn))) {
+      return(NULL)
+    }
+    df.cn <- as.data.frame(cn)
+    levlist <- x$terminfo$xlev
+    if (!is.null(levlist) && length(levlist) > 0L) {
+      levinterpret <- do.call(
+        "rbind",
+        lapply(names(levlist), function(levs) {
+          cbind(
+            .level = levlist[[levs]],
+            .fullname = paste0(levs, levlist[[levs]])
+          )
+        })
+      )
+      df.cn$.cnname <- rownames(cn)
+      df.cn <- merge(df.cn, levinterpret, by.x = ".cnname", by.y = ".fullname", sort = FALSE)
+      df.cn <- df.cn[, c(2, 3, 1, 4), drop = FALSE]
     } else {
-      data$Row.numbers <- 1:nrow(data)
-      data$Row.names <- rownames(data)
+      df.cn$.cnname <- rownames(cn)
+      df.cn$.level <- rownames(cn)
     }
-
-    #allow merging variants
-    if (merge_by %in% c("rownames", "row.names", "Row.names", ".Row.names")) {
-      merge_by = "Row.names"
+    df.cn$Row.names <- df.cn$.cnname
+    return(df.cn)
+  }
+  
+  # Standard extraction for "sites", "species", "lc"
+  raw_scores <- tryCatch(
+    vegan::scores(x, display = display, scaling = scaling, choices = choices, ...),
+    error = function(e) NULL
+  )
+  if (is.null(raw_scores) || length(raw_scores) == 0L || all(is.na(raw_scores))) {
+    return(NULL)
+  }
+  
+  display_data <- as.data.frame(raw_scores)
+  if (nrow(display_data) == 0L) {
+    return(NULL)
+  }
+  
+  if (all(substring(rownames(display_data), 1, 3) %in% c("row", "sit")) && isTRUE(remove_row_prefix)) {
+    rownames(display_data) <- substring(rownames(display_data), 4, nchar(rownames(display_data)))
+  }
+  display_data$Row.names <- rownames(display_data)
+  display_data$Row.numbers <- seq_len(nrow(display_data))
+  
+  if (is.null(data)) {
+    data <- data.frame(
+      Row.numbers = seq_len(nrow(display_data)),
+      Row.names = rownames(display_data)
+    )
+  } else {
+    data <- as.data.frame(data)
+    data$Row.numbers <- seq_len(nrow(data))
+    data$Row.names <- rownames(data)
+  }
+  
+  if (merge_by %in% c("rownames", "row.names", "Row.names", ".Row.names")) {
+    merge_by <- "Row.names"
+  } else if (merge_by %in% c("rownumbers", "row.numbers", "Row.numbers", ".Row.numbers")) {
+    merge_by <- "Row.numbers"
+  }
+  
+  if (merge_by == "Row.numbers") {
+    if (nrow(display_data) != nrow(data)) {
+      stop("Merge on row.numbers for 2 datasets that do not have the same number of rows")
     }
-    if (merge_by %in% c("rownumbers", "row.numbers", "Row.numbers", ".Row.numbers")) {
-      merge_by = "Row.numbers"
-    }
-
-    #Merge the plotdata with the descriptordata
-    if (merge_by == "Row.numbers"){
-      print(paste(display, "merge by numbers"))
-      if (nrow(display_data) != nrow(data)){
-        stop("Merge on row.numbers for 2 datasets that do not have the same number of rows")
-      } else {
-        display_data <- cbind(display_data, data)
-      }
-    } else { #merge on rownames or variable
-      print(paste(display, "merge by", merge_by))
-      if (!all(rownames(display_data) %in% as.data.frame(data)[,merge_by])){
-        stop("Not all rownames of the display data are found in the merge_by column in the descriptor data")
-      } else {
-        display_data <- merge(display_data, data, by.x = "Row.names", by.y = merge_by, all.x = TRUE, sort = FALSE)
-        display_data <- display_data[ , c(2:3,1, 4:ncol(display_data)), drop = FALSE]
-      }
-    }
-
-    #Check data after merge
-    if (nrow(display_data) < 2) {
-      warning("After merging with descriptor there are less than 2 observations left")
-    }
-
-
-    ### >>> SPECIFIC ACTION according to display type
-
-    ###sites
-    if (display == "sites"){
-      if (scaling == 2) {
-        u.axis.labs = paste("standardized", colnames(display_data)[1:2])
-      } else {
-        u.axis.labs <- colnames(display_data)[1:2]
-      }
-      u.axis.labs <-
-        paste(u.axis.labs,
-              sprintf('(%0.1f%% explained var.)',
-                      100 * c(x$CCA$eig, x$CA$eig)[choices] / sum(c(x$CCA$eig, x$CA$eig))))
-      attr(display_data, "axis.labels") <- u.axis.labs
-
-      ###species
-    } else if (display == "species"){
-      if(species_abbrev) {
-        display_data$Row.names <- abbreviate(display_data$Row.names)
-      }
-
-      #Create variables to aid with plotting
-      display_data$.angle <- (180/pi) * atan(display_data[,2] / display_data[,1])
-      display_data$.hjust <- (1 - species_adjust * sign(display_data[,1])) / 2
-
-      #Add r attribute fot the radius for the correlation circle
-      attr(display_data, "r") <- sqrt(max(rowSums(display_data[,1:2])^2))
-
-      ###lc
-    } else if (display == "lc"){
-      #do nothing extra
-
-      ###bp
-    } else if (display == "bp"){
-      q <- ncol(x$CCA$v)
-      #multiplier for the coordinates of the head of the vector to occumay fill proportion of the plot
-      bp <- scores(x, display = "bp", scaling = scaling, choices=choices)
-      bp <- ordiArrowMul(bp, fill = 0.95) * bp 
-      #bp <- attr(bp, "const") * bp
-      cn <- scores(x, display = "cn", scaling = scaling, choices=choices)
-      if (!is.null(q)){
-        # Check if cn is valid (not NULL, has rows, and not all NA)
-        if(!is.null(cn) && is.matrix(cn) && nrow(cn) > 0 && !all(is.na(cn))) {
-          bipnam <- rownames(bp)
-          cntnam <- rownames(cn)
-          bp <- bp[!(bipnam %in% cntnam), , drop = FALSE]
-          df.bp <- as.data.frame(bp)
-          if (nrow(bp) == 0) df.bp <- NULL
-
-        } else {
-          df.bp <- as.data.frame(bp)
-        }
-      } else {
-        df.bp <- NULL
-      }
-      if(!is.null(df.bp)){
-        df.bp$.bpname <- rownames(bp)
-        df.bp$.angle <- (180/pi) * atan(df.bp[,2] / df.bp[,1])
-        df.bp$.hjust = (1 - species_adjust * sign(df.bp[,1])) / 2
-        df.bp$Row.names <- rownames(df.bp)
-      }
-      display_data <- df.bp
-
-
-
-      ###cn
-    } else if (display == "cn"){
-      q <- ncol(x$CCA$v)
-      #bp <- scores(x, display = "bp", scaling = scaling, choices=choices)
-      cn <- scores(x, display = "cn", scaling = scaling, choices=choices)
-      levlist <- x$terminfo$xlev
-      if (!is.null(q)) {
-        if (!is.na(cn)[1]) {
-          df.cn <- as.data.frame(cn)
-        } else {
-          df.cn <- NULL
-        }
-      } else {
-        df.cn <- NULL
-      }
-
-      if(!is.null(q) & !is.na(cn)[1]){
-        # centroid names
-        levinterpret <-
-          do.call("rbind",
-                  lapply(names(levlist), levlist = levlist,
-                         FUN= function(levs, levlist){
-                           cbind(.level = levlist[[levs]],
-                                 .fullname = paste(levs, levlist[[levs]], sep = ""))
-                         }))
-        df.cn$.cnname <- rownames(cn)
-        df.cn <- merge(df.cn, levinterpret, by.x = ".cnname", by.y = ".fullname", sort = FALSE)
-        df.cn <- df.cn[c(2,3,1,4)] #door de merge wordt de merge kolom eerst gezet, en we willen dat dit de scores zijn
-        df.cn$Row.names <- row.names(df.cn)
-        display_data <- df.cn
-      } else {
-        warning("display not in sites, species, lc, bp, cn")
-      }
+    extra_cols <- setdiff(names(data), c("Row.names", "Row.numbers"))
+    if (length(extra_cols) > 0L) {
+      display_data <- cbind(display_data, data[, extra_cols, drop = FALSE])
     }
   } else {
-    display_data <- NULL
+    if (!all(rownames(display_data) %in% data[[merge_by]])) {
+      stop("Not all rownames of the display data are found in the merge_by column in the descriptor data")
+    }
+    extra_data <- data[, setdiff(names(data), "Row.numbers"), drop = FALSE]
+    if (merge_by != "Row.names") {
+      extra_data$Row.names <- NULL
+    }
+    display_data <- merge(display_data, extra_data, by.x = "Row.names", by.y = merge_by, all.x = TRUE, sort = FALSE)
+    display_data <- display_data[, c(2:3, 1, 4:ncol(display_data)), drop = FALSE]
   }
-
-  ### >>> RETURN
+  
+  if (nrow(display_data) < 2L) {
+    warning("After merging with descriptor there are less than 2 observations left")
+  }
+  
+  if (display == "sites") {
+    if (identical(scaling, 2) || identical(scaling, "species")) {
+      u.axis.labs <- paste("standardized", colnames(display_data)[1:2])
+    } else {
+      u.axis.labs <- colnames(display_data)[1:2]
+    }
+    eigs <- c(x$CCA$eig, x$CA$eig)
+    if (!is.null(eigs) && length(eigs) >= max(choices)) {
+      u.axis.labs <- paste(
+        u.axis.labs,
+        sprintf("(%0.1f%% explained var.)", 100 * eigs[choices] / sum(eigs[eigs > 0]))
+      )
+    }
+    attr(display_data, "axis.labels") <- u.axis.labs
+  } else if (display == "species") {
+    if (isTRUE(species_abbrev)) {
+      display_data$Row.names <- abbreviate(display_data$Row.names)
+    }
+    display_data$.angle <- (180 / pi) * atan(display_data[, 2] / display_data[, 1])
+    display_data$.hjust <- (1 - species_adjust * sign(display_data[, 1])) / 2
+    attr(display_data, "r") <- sqrt(max(rowSums(display_data[, 1:2, drop = FALSE]^2, na.rm = TRUE)))
+  }
+  
   display_data
 }
 
-#-------------------------------------------------------------------------------
-
 #' Select and configure geom layers for biplot elements
 #'
-#' This helper function creates ggplot2 geom layers with appropriate aesthetics
-#' based on the specified geometry type and mappings. It handles conditional
-#' application of base colors, shapes, and sizes depending on whether these
-#' aesthetics are explicitly mapped.
+#' @param mapping `ggplot2` aesthetic mapping created with `aes()`.
+#' @param data Data frame to be plotted.
+#' @param geom Character string: `"text"`, `"point"`, `"blank"`, `"line"`, or `"path"`.
+#' @param base_color Base color when `colour` is not mapped.
+#' @param base_shape Base point shape when `shape` is not mapped.
+#' @param base_size Base size when `size` is not mapped.
+#' @param ... Additional arguments passed to the underlying `geom_*` function.
 #'
-#' @param mapping ggplot2 aesthetic mapping created with \code{aes()}
-#' @param data Data frame to be plotted
-#' @param geom Character string specifying the geometry type:
-#'   "text", "point", "blank" (no display), "line", or "path"
-#' @param base_color Character string for the base color to use when color
-#'   is not mapped in the aesthetics
-#' @param base_shape Numeric value for the base point shape (pch code) to use
-#'   when shape is not mapped
-#' @param base_size Numeric value for the base size to use when size is not mapped
-#' @param ... Additional arguments passed to the ggplot2 geom function
-#'
-#' @return A ggplot2 layer (geom_*) or NULL if geom = "blank"
-#'
+#' @return A `ggplot2` layer or `NULL` if `geom = "blank"`.
+#' @importFrom ggplot2 geom_text geom_point geom_line geom_path rel
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' library(ggplot2)
-#' df <- data.frame(x = 1:10, y = 1:10, group = rep(c("A", "B"), 5))
-#' 
-#' # Point geom with base settings
-#' ggplot(df, aes(x = x, y = y)) +
-#'   geom_selector(aes(x = x, y = y), df, "point", 
-#'                 base_color = "red", base_shape = 16, base_size = 3)
-#' 
-#' # Text geom with mapped color
-#' ggplot(df, aes(x = x, y = y)) +
-#'   geom_selector(aes(x = x, y = y, color = group, label = group), df, "text",
-#'                 base_color = "blue", base_shape = 16, base_size = 4)
-#' }
-#'
-geom_selector <- function(mapping, data, geom, base_color, base_shape, base_size, ...){
-  if (       geom == "text"){
-    if        (is.null(mapping$colour) & is.null(mapping$size)){
-      add <- geom_text(mapping = mapping, data = data, color = base_color, size = rel(base_size))
-    } else if (is.null(mapping$colour) & !is.null(mapping$size)){
-      add <- geom_text(mapping = mapping, data = data, color = base_color)
-    } else if (!is.null(mapping$colour) & is.null(mapping$size)){
-      add <- geom_text(mapping = mapping, data = data, size = rel(base_size))
-    } else {
-      add <- geom_text(mapping = mapping, data = data)
-    }
-
+geom_selector <- function(mapping, data, geom, base_color, base_shape, base_size, ...) {
+  if (geom == "blank") return(NULL)
+  
+  has_col <- !is.null(mapping$colour) || !is.null(mapping$color)
+  has_sz  <- !is.null(mapping$size)
+  has_shp <- !is.null(mapping$shape)
+  
+  args <- list(mapping = mapping, data = data, ...)
+  if (!has_col && !missing(base_color)) args$color <- base_color
+  
+  if (geom == "text") {
+    if (!has_sz && !missing(base_size)) args$size <- ggplot2::rel(base_size)
+    return(do.call(ggplot2::geom_text, args))
   } else if (geom == "point") {
-    if        (is.null(mapping$colour) & is.null(mapping$shape) & is.null(mapping$size)){
-      add <- geom_point(mapping = mapping, data = data, color = base_color, shape = base_shape, size = rel(base_size))
-    } else if (is.null(mapping$colour) & is.null(mapping$shape) & !is.null(mapping$size)){
-      add <- geom_point(mapping = mapping, data = data, color = base_color, shape = base_shape)
-    } else if (is.null(mapping$colour) & !is.null(mapping$shape) & is.null(mapping$size)){
-      add <- geom_point(mapping = mapping, data = data, color = base_color, size = rel(base_size))
-    } else if (is.null(mapping$colour) & !is.null(mapping$shape) & !is.null(mapping$size)){
-      add <- geom_point(mapping = mapping, data = data, color = base_color)
-    } else if (!is.null(mapping$colour) & is.null(mapping$shape) & is.null(mapping$size)){
-      add <- geom_point(mapping = mapping, data = data, shape = base_shape, size = rel(base_size))
-    } else if (!is.null(mapping$colour) & is.null(mapping$shape) & !is.null(mapping$size)){
-      add <- geom_point(mapping = mapping, data = data, shape = base_shape)
-    } else if (!is.null(mapping$colour) & !is.null(mapping$shape) & is.null(mapping$size)){
-      add <- geom_point(mapping = mapping, data = data, size = rel(base_size))
-    } else {
-      add <- geom_point(mapping = mapping, data = data)
-    }
-
-  } else if (geom == "blank") {
-    add <- NULL
-
+    if (!has_sz && !missing(base_size)) args$size <- ggplot2::rel(base_size)
+    if (!has_shp && !missing(base_shape)) args$shape <- base_shape
+    return(do.call(ggplot2::geom_point, args))
   } else if (geom == "line") {
-    if (is.null(mapping$colour)){
-      add <- geom_line(mapping = mapping, data = data, color = base_color)
-    }
-
+    return(do.call(ggplot2::geom_line, args))
   } else if (geom == "path") {
-    add <- geom_path(mapping = mapping, data = data)
+    return(do.call(ggplot2::geom_path, args))
   } else {
     warning(paste("no geom_selector defined for geom", geom))
+    return(NULL)
   }
-  add
 }
-
-#-------------------------------------------------------------------------------
-
-
-
-
-

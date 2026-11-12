@@ -8,7 +8,7 @@
 \alias{ggbiplot_vegan.princomp}
 \alias{ggbiplot_vegan.prcomp}
 \alias{ggbiplot_vegan.default}
-\title{GGbiplot prototype function}
+\title{Create a ggplot-based biplot for multivariate analysis objects}
 \usage{
 ggbiplot_vegan(x, ...)
 
@@ -22,84 +22,121 @@ ggbiplot_vegan(x, ...)
 
 \method{ggbiplot_vegan}{prcomp}(x, ...)
 
-\method{ggbiplot_vegan}{default}(x, choices = 1:2, scaling = 2,
-  site_data = NULL, site_merge_by = "row.names", species_data = NULL,
-  species_merge_by = "row.names", site_geom = "point",
-  site_mapping = aes(label = Row.names), centroid_geom = "blank",
-  centroid_mapping = aes(group = 1), ellipse_geom = "blank",
-  ellipse_mapping = NULL, species_geom = "arrow",
-  species_mapping = aes(label = Row.names), cor_circle_geom = "blank",
-  cor_circle_mapping = NULL, lc_geom = "blank",
-  lc_mapping = aes(label = Row.names), bp_geom = "blank",
-  bp_mapping = NULL, cn_geom = "blank", cn_mapping = aes(label =
-  .level), species_abbrev = FALSE, species_adjust = 1.1,
-  ellipse_level = 0.68, base_colors = c("black", "red", "blue"),
-  base_shapes = c(16, 16, 16), base_sizes = c(2, 2, 2),
-  legend_position = "right", ...)
+\method{ggbiplot_vegan}{default}(
+  x,
+  choices = 1:2,
+  scaling = 2,
+  site_data = NULL,
+  site_merge_by = "row.names",
+  species_data = NULL,
+  species_merge_by = "row.names",
+  site_geom = "point",
+  site_mapping = aes(label = .data$Row.names),
+  centroid_geom = "blank",
+  centroid_mapping = aes(group = 1),
+  ellipse_geom = "blank",
+  ellipse_mapping = NULL,
+  species_geom = "arrow",
+  species_mapping = aes(label = .data$Row.names),
+  cor_circle_geom = "blank",
+  cor_circle_mapping = NULL,
+  lc_geom = "blank",
+  lc_mapping = aes(label = .data$Row.names),
+  bp_geom = "blank",
+  bp_mapping = NULL,
+  cn_geom = "blank",
+  cn_mapping = aes(label = .data$.level),
+  species_abbrev = FALSE,
+  species_adjust = 1.1,
+  ellipse_level = 0.68,
+  base_colors = c("black", "red", "blue"),
+  base_shapes = c(16, 16, 16),
+  base_sizes = c(2, 2, 2),
+  legend_position = "right",
+  ...
+)
 }
 \arguments{
-\item{x}{vegan object}
+\item{x}{An ordination object (\code{rda}, \code{cca}, \code{capscale}, \code{prcomp}, or \code{princomp}).}
 
-\item{...}{other arguments for ggbiplot_vegan.default}
+\item{...}{Additional arguments passed to specific methods.}
 
-\item{choices}{which 2 components schould be visualized}
+\item{choices}{Integer vector of length 2 specifying which ordination axes to plot.}
 
-\item{scaling}{used scaling (1  = site, 2 = species (default)). If scaling = 2, than the angle of the species (variables) matches the correlation}
+\item{scaling}{Integer (\code{1} or \code{2}) or character specifying the scaling to use.}
 
-\item{site_data}{descriptor data for the sites}
+\item{site_data}{Optional data frame with descriptor variables for sites.}
 
-\item{site_merge_by}{merge the site descriptor with the vegan object on .Rownumbers (cbind), .Rownames or any other column (merge this column with the site scores matrix rownames)}
+\item{site_merge_by}{How to merge \code{site_data}: \code{"row.names"}, \code{"row.numbers"}, or column name.}
 
-\item{species_data}{descriptor data for the species}
+\item{species_data}{Optional data frame with descriptor variables for species.}
 
-\item{species_merge_by}{merge species data (see site_merge_by)}
+\item{species_merge_by}{How to merge \code{species_data}.}
 
-\item{site_geom}{which geom to represent the sites "blank", "point", "text"}
+\item{site_geom}{\code{"blank"}, \code{"point"} (default), or \code{"text"}.}
 
-\item{site_mapping}{ggplot mapping in the format aes() but x and y must not be given, so for example (aes(color = Kolom1, size = Kolom2, label = Kolom3)). This should always contain the label argument if the geom is "text"}
+\item{site_mapping}{\code{ggplot2} aesthetic mapping for sites.}
 
-\item{centroid_geom}{representation of the site centroids ("blank", "point", "text")}
+\item{centroid_geom}{\code{"blank"} (default), \code{"point"}, or \code{"text"}.}
 
-\item{centroid_mapping}{ggplot mapping for the centroids (see site_mapping)}
+\item{centroid_mapping}{\code{ggplot2} aesthetic mapping for centroids.}
 
-\item{ellipse_geom}{representation of the site probability density ellipses ("blank", "line")}
+\item{ellipse_geom}{\code{"blank"} (default) or \code{"line"}.}
 
-\item{ellipse_mapping}{ggplot mapping for the ellipses}
+\item{ellipse_mapping}{\code{ggplot2} aesthetic mapping for ellipses.}
 
-\item{species_geom}{representation of the species (or biometric variables) ("blank", "text", "arrow", "point")}
+\item{species_geom}{\code{"arrow"} (default), \code{"text"}, \code{"point"}, or \code{"blank"}.}
 
-\item{species_mapping}{ggplot mapping for the species}
+\item{species_mapping}{\code{ggplot2} aesthetic mapping for species.}
 
-\item{cor_circle_geom}{representation of the correlation circle ("blank", "line")}
+\item{cor_circle_geom}{\code{"blank"} (default) or \code{"line"}.}
 
-\item{cor_circle_mapping}{ggplot mapping for the correlation circle}
+\item{cor_circle_mapping}{\code{ggplot2} aesthetic mapping for correlation circle.}
 
-\item{lc_geom}{representation of linear constraints (see site_geom)}
+\item{lc_geom}{\code{"blank"} (default), \code{"point"}, or \code{"text"}.}
 
-\item{lc_mapping}{see site_mapping but for the linear constraints}
+\item{lc_mapping}{\code{ggplot2} aesthetic mapping for linear constraints.}
 
-\item{bp_geom}{representation of the continuous environmental variables ("blank", "arrow", "text", "point")}
+\item{bp_geom}{\code{"blank"} (default), \code{"arrow"}, \code{"text"}, or \code{"point"}.}
 
-\item{bp_mapping}{mapping of the continuous environmental variables}
+\item{bp_mapping}{\code{ggplot2} aesthetic mapping for continuous environmental variables.}
 
-\item{cn_geom}{representation of the discrete environmental variables}
+\item{cn_geom}{\code{"blank"} (default), \code{"point"}, or \code{"text"}.}
 
-\item{cn_mapping}{mapping of the discrete environmental variables}
+\item{cn_mapping}{\code{ggplot2} aesthetic mapping for discrete environmental variables.}
 
-\item{species_abbrev}{logical that controls if species names (or variables when not working with vegetation data) should be abbreviated}
+\item{species_abbrev}{Logical; abbreviate species names (default: \code{FALSE}).}
 
-\item{species_adjust}{adjustment of the species labels so they do not collide with the arrows}
+\item{species_adjust}{Numeric adjustment factor for species labels (default: \code{1.1}).}
 
-\item{ellipse_level}{probability density on which the ellipses should be based. 0.68 or 0.95 are the most logical choices (1 or 2 sd from the centroids)}
+\item{ellipse_level}{Numeric probability level for ellipses (default: \code{0.68}).}
 
-\item{base_colors}{vector of 3 elements with the base colors of sites, species and environmental variables}
+\item{base_colors}{Character vector of length 3 for sites, species, and env variables.}
 
-\item{base_shapes}{vector of 3 elements with the base shapes for sites, species and environmental variables}
+\item{base_shapes}{Numeric vector of length 3 for sites, species, and env variables.}
 
-\item{base_sizes}{vector of 3 elements  with the base sizes for sites, species and environmental variables}
+\item{base_sizes}{Numeric vector of length 3 for sites, species, and env variables.}
 
-\item{legend_position}{position of the legend "top", "bottom", "left", "right", "none"}
+\item{legend_position}{\code{"right"} (default), \code{"top"}, \code{"bottom"}, \code{"left"}, or \code{"none"}.}
+}
+\value{
+A \code{ggplot} object representing the biplot.
 }
 \description{
-Wrapper function around all geoms to construct a ggplot for vegan objects (rda, cca, capscale)
+Create a ggplot-based biplot for multivariate analysis objects
 }
+\section{Methods (by class)}{
+\itemize{
+\item \code{ggbiplot_vegan(rda)}: Method for \code{rda} objects
+
+\item \code{ggbiplot_vegan(cca)}: Method for \code{cca} objects
+
+\item \code{ggbiplot_vegan(capscale)}: Method for \code{capscale} objects
+
+\item \code{ggbiplot_vegan(princomp)}: Method for \code{princomp} objects
+
+\item \code{ggbiplot_vegan(prcomp)}: Method for \code{prcomp} objects
+
+\item \code{ggbiplot_vegan(default)}: Default method for creating biplots with vegan objects
+
+}}

@@ -1,0 +1,35 @@
+url: https://inbo.github.io/inboggvegan/
+template:
+  bootstrap: 5
+
+reference:
+  - title: "Main Ordination & Biplot Functions"
+    desc: "High-level ggplot2 functions for PCA, RDA, CCA, and CAP biplots and screeplots."
+    contents:
+      - ggbiplot_vegan
+      - ggbiplot
+      - ggscreeplot
+
+  - title: "Ecological Ordination Extensions"
+    desc: "Hulls, spiders, GAM surfaces, envfit overlays, and NMDS Shepard plots."
+    contents:
+      - ggordihull_spider
+      - ggordisurf
+      - ggenvfit
+      - ggshepard
+
+  - title: "Custom ggplot2 Layers & Helpers"
+    desc: "Data extractors, geoms, and stats for building custom ordination plots."
+    contents:
+      - get_display_data
+      - geom_arrow
+      - geom_arrowlabel
+      - geom_corcircle
+      - stat_centroid
+      - geom_selector
+
+articles:
+  - title: "Tutorials"
+    navbar: ~
+    contents:
+      - inboggvegan-overview
